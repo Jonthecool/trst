@@ -1143,7 +1143,7 @@ function parseRssXml(text, source){
     // Support RSS 2.0 <item> AND Atom <entry>
     const nodes = [...xml.querySelectorAll('item'), ...xml.querySelectorAll('entry')];
     if(!nodes.length) return [];
-    return nodes.slice(0,15).map(item=>{
+    return nodes.slice(0,20).map(item=>{
       const title = tagText(item,'title');
       const link  = pickLink(item);
       // pubDate (RSS) or published/updated (Atom)
@@ -1213,7 +1213,7 @@ async function fetchFeedFallback(source){
   if(data.status!=='ok'||!data.items) return {items:[], cached:true};
   return {
     cached: true,
-    items: data.items.slice(0,15).map(item=>({
+    items: data.items.slice(0,20).map(item=>({
       source,
       title: item.title||'',
       link: item.link||item.guid||'#',
@@ -1254,13 +1254,18 @@ async function loadAll(){
   try{
     const results = await Promise.allSettled(SOURCES.map(fetchFeed));
     let liveCount = 0, cachedCount = 0;
+    // Cap each source to an equal share so no outlet dominates the feed,
+    // then merge, sort by date, and keep the newest 100 overall.
+    const MAX_ARTICLES = 100;
+    const maxPerSource = Math.ceil(MAX_ARTICLES / SOURCES.length);
     allArticles = results
       .flatMap(r=>{
         if(r.status!=='fulfilled') return [];
         if(r.value.cached) cachedCount++; else liveCount++;
-        return r.value.items;
+        return r.value.items.slice(0, maxPerSource);
       })
-      .sort((a,b)=>(b.pubDate||0)-(a.pubDate||0));
+      .sort((a,b)=>(b.pubDate||0)-(a.pubDate||0))
+      .slice(0, MAX_ARTICLES);
 
     document.getElementById('live-count').textContent = allArticles.length;
     document.getElementById('article-count').textContent = allArticles.length;
