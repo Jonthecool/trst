@@ -333,7 +333,10 @@ footer{text-align:center;padding:1.5rem 1rem .5rem;font-size:.62rem;color:var(--
 
 <!-- ─── Toolbar ──────────────────────────────────────────────────── -->
 <div class="toolbar" id="main-toolbar">
-  <span>Showing <strong id="article-count">—</strong> stories · <span id="refresh-timer"></span></span>
+  <span style="display:flex;flex-direction:column;gap:.1rem">
+    <span>Showing <strong id="article-count">—</strong> stories · <span id="refresh-timer"></span></span>
+    <span id="fetch-status" style="font-size:.6rem;color:var(--dim)">⏳ Fetching…</span>
+  </span>
   <button class="refresh-btn" id="refresh-btn" onclick="loadAll()">
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
       <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
@@ -1027,16 +1030,22 @@ function updateBMCount(){
 }
 
 // ─── Parse raw RSS XML ───────────────────────────────────────────────────────
-// Used when fetching directly (bypasses rss2json server cache).
+// Handles both RSS 2.0 (<item>) and Atom (<entry>) feeds.
 function parseRssXml(text, source){
   try{
     const xml = new DOMParser().parseFromString(text,'application/xml');
     if(xml.querySelector('parsererror')) return [];
-    return Array.from(xml.querySelectorAll('item')).slice(0,15).map(item=>{
+    // Support RSS 2.0 items AND Atom entries
+    const nodes = [...xml.querySelectorAll('item'), ...xml.querySelectorAll('entry')];
+    if(!nodes.length) return [];
+    return nodes.slice(0,15).map(item=>{
       const get = sel => item.querySelector(sel)?.textContent?.trim()||'';
-      const link = get('link')||get('guid')||'#';
-      const pubStr = get('pubDate');
-      // thumbnail: try media:thumbnail, then enclosure, then img in content
+      // <link href="..."/> (Atom) or <link>url</link> (RSS 2.0) or <guid>
+      const linkEl = item.querySelector('link');
+      const link = linkEl?.getAttribute('href') || linkEl?.textContent?.trim() || get('guid') || '#';
+      // pubDate (RSS) or published/updated (Atom)
+      const pubStr = get('pubDate') || get('published') || get('updated');
+      // thumbnail: media:thumbnail[url], then enclosure, then img in body
       let thumb = null;
       const mt = item.querySelector('thumbnail');
       if(mt) thumb = mt.getAttribute('url');
@@ -1045,13 +1054,13 @@ function parseRssXml(text, source){
         if(enc && /image/i.test(enc.getAttribute('type')||'')) thumb = enc.getAttribute('url');
       }
       if(!thumb){
-        const body = get('encoded')||get('description');
+        const body = get('encoded')||get('content')||get('description')||get('summary');
         const m = body.match(/src=["']([^"']+\.(jpg|jpeg|png|webp)[^"']*)/i);
         if(m) thumb = m[1];
       }
       return{
         source,
-        title: get('title').replace(/<!\[CDATA\[|\]\]>/g,''),
+        title: get('title'),
         link,
         pubDate: pubStr ? new Date(pubStr) : null,
         thumb,
@@ -1062,60 +1071,87 @@ function parseRssXml(text, source){
 }
 
 // ─── Fetch one feed ──────────────────────────────────────────────────────────
-// Primary path: direct RSS via allorigins.win CORS proxy — always fresh, no
-// server-side cache. Falls back to rss2json if the proxy fails.
+// Races two CORS proxies in parallel — whichever returns valid data first wins.
+// Falls back to rss2json (cached ~1h) only if both proxies fail.
+const PROXIES = [
+  url => 'https://corsproxy.io/?' + encodeURIComponent(url),
+  url => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
+];
+
+function makeSignal(){
+  // AbortSignal.timeout not available on Safari < 15.4
+  if(AbortSignal.timeout) return AbortSignal.timeout(9000);
+  const c = new AbortController();
+  setTimeout(()=>c.abort(), 9000);
+  return c.signal;
+}
+
 async function fetchFeedDirect(source){
-  const res = await fetch(
-    'https://api.allorigins.win/raw?url='+encodeURIComponent(source.url),
-    {cache:'no-store', signal:AbortSignal.timeout(9000)}
+  // Promise.any resolves with the first proxy that returns non-empty items
+  return await Promise.any(
+    PROXIES.map(async proxyFn => {
+      const res = await fetch(proxyFn(source.url), {cache:'no-store', signal:makeSignal()});
+      if(!res.ok) throw new Error(res.status);
+      const items = parseRssXml(await res.text(), source);
+      if(!items.length) throw new Error('empty');
+      return items;
+    })
   );
-  if(!res.ok) throw new Error(res.status);
-  return parseRssXml(await res.text(), source);
 }
 
 async function fetchFeedFallback(source){
   const res = await fetch(R2J+encodeURIComponent(source.url),
-    {cache:'no-store', signal:AbortSignal.timeout(9000)});
-  if(!res.ok) return [];
+    {cache:'no-store', signal:makeSignal()});
+  if(!res.ok) return {items:[], cached:true};
   const data = await res.json();
-  if(data.status!=='ok'||!data.items) return [];
-  return data.items.slice(0,15).map(item=>({
-    source,
-    title: item.title||'',
-    link: item.link||item.guid||'#',
-    pubDate: parseRssDate(item.pubDate),
-    thumb: extractImg(item),
-    categories: item.categories||[],
-  }));
+  if(data.status!=='ok'||!data.items) return {items:[], cached:true};
+  return {
+    cached: true,
+    items: data.items.slice(0,15).map(item=>({
+      source,
+      title: item.title||'',
+      link: item.link||item.guid||'#',
+      pubDate: parseRssDate(item.pubDate),
+      thumb: extractImg(item),
+      categories: item.categories||[],
+    })),
+  };
 }
 
+// Returns { items, cached } so loadAll can track live vs fallback counts
 async function fetchFeed(source){
   try{
     const items = await fetchFeedDirect(source);
-    if(items.length) return items;
+    if(items.length) return {items, cached:false};
   }catch{}
   try{ return await fetchFeedFallback(source); }catch{}
-  return [];
+  return {items:[], cached:true};
 }
 
 // ─── Load all ────────────────────────────────────────────────────────────────
 async function loadAll(){
-  // Clear interval BEFORE async work — prevents double-invocation if the
-  // timer fires again while a slow fetch is still in flight.
+  // Clear interval BEFORE async work — prevents double-invocation
   clearInterval(refreshInterval);
   refreshInterval = null;
 
   showSkeletons('live-feed',8);
   const btn = document.getElementById('refresh-btn');
   btn.classList.add('spinning');
+  setFetchStatus('loading');
 
   const results = await Promise.allSettled(SOURCES.map(fetchFeed));
+  let liveCount = 0, cachedCount = 0;
   allArticles = results
-    .flatMap(r=>r.status==='fulfilled'?r.value:[])
+    .flatMap(r=>{
+      if(r.status!=='fulfilled') return [];
+      if(r.value.cached) cachedCount++; else liveCount++;
+      return r.value.items;
+    })
     .sort((a,b)=>(b.pubDate||0)-(a.pubDate||0));
 
   document.getElementById('live-count').textContent = allArticles.length;
   document.getElementById('article-count').textContent = allArticles.length;
+  setFetchStatus('done', liveCount, cachedCount);
 
   // Restart auto-refresh countdown
   nextRefreshAt = Date.now() + 5*60*1000;
@@ -1130,6 +1166,26 @@ async function loadAll(){
   updateTrending();
   renderCurrentTab();
   btn.classList.remove('spinning');
+}
+
+function setFetchStatus(state, live=0, cached=0){
+  const el = document.getElementById('fetch-status');
+  if(!el) return;
+  if(state==='loading'){
+    el.textContent='⏳ Fetching live feeds…';
+    el.style.color='var(--dim)';
+    return;
+  }
+  const total = live+cached;
+  if(live===total && total>0){
+    el.innerHTML=`<span style="color:var(--green)">● Live</span> · ${total}/${SOURCES.length} sources`;
+  } else if(live>0){
+    el.innerHTML=`<span style="color:var(--yellow)">◐ Partial</span> · ${live} live, ${cached} cached`;
+  } else {
+    el.innerHTML=`<span style="color:var(--accent)">● Cached</span> · data may be up to 1h old`;
+  }
+  const t = new Date();
+  el.innerHTML += ` · ${t.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}`;
 }
 
 function renderCurrentTab(){
