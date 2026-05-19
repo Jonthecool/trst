@@ -1026,26 +1026,85 @@ function updateBMCount(){
   el.textContent = bookmarks.length > 0 ? bookmarks.length : '';
 }
 
+// ─── Parse raw RSS XML ───────────────────────────────────────────────────────
+// Used when fetching directly (bypasses rss2json server cache).
+function parseRssXml(text, source){
+  try{
+    const xml = new DOMParser().parseFromString(text,'application/xml');
+    if(xml.querySelector('parsererror')) return [];
+    return Array.from(xml.querySelectorAll('item')).slice(0,15).map(item=>{
+      const get = sel => item.querySelector(sel)?.textContent?.trim()||'';
+      const link = get('link')||get('guid')||'#';
+      const pubStr = get('pubDate');
+      // thumbnail: try media:thumbnail, then enclosure, then img in content
+      let thumb = null;
+      const mt = item.querySelector('thumbnail');
+      if(mt) thumb = mt.getAttribute('url');
+      if(!thumb){
+        const enc = item.querySelector('enclosure[url]');
+        if(enc && /image/i.test(enc.getAttribute('type')||'')) thumb = enc.getAttribute('url');
+      }
+      if(!thumb){
+        const body = get('encoded')||get('description');
+        const m = body.match(/src=["']([^"']+\.(jpg|jpeg|png|webp)[^"']*)/i);
+        if(m) thumb = m[1];
+      }
+      return{
+        source,
+        title: get('title').replace(/<!\[CDATA\[|\]\]>/g,''),
+        link,
+        pubDate: pubStr ? new Date(pubStr) : null,
+        thumb,
+        categories:[],
+      };
+    }).filter(a=>a.title&&a.link&&a.link!=='#');
+  }catch{ return []; }
+}
+
 // ─── Fetch one feed ──────────────────────────────────────────────────────────
+// Primary path: direct RSS via allorigins.win CORS proxy — always fresh, no
+// server-side cache. Falls back to rss2json if the proxy fails.
+async function fetchFeedDirect(source){
+  const res = await fetch(
+    'https://api.allorigins.win/raw?url='+encodeURIComponent(source.url),
+    {cache:'no-store', signal:AbortSignal.timeout(9000)}
+  );
+  if(!res.ok) throw new Error(res.status);
+  return parseRssXml(await res.text(), source);
+}
+
+async function fetchFeedFallback(source){
+  const res = await fetch(R2J+encodeURIComponent(source.url),
+    {cache:'no-store', signal:AbortSignal.timeout(9000)});
+  if(!res.ok) return [];
+  const data = await res.json();
+  if(data.status!=='ok'||!data.items) return [];
+  return data.items.slice(0,15).map(item=>({
+    source,
+    title: item.title||'',
+    link: item.link||item.guid||'#',
+    pubDate: parseRssDate(item.pubDate),
+    thumb: extractImg(item),
+    categories: item.categories||[],
+  }));
+}
+
 async function fetchFeed(source){
   try{
-    const res = await fetch(R2J+encodeURIComponent(source.url),{cache:'no-store'});
-    if(!res.ok) return [];
-    const data = await res.json();
-    if(data.status!=='ok'||!data.items) return [];
-    return data.items.slice(0,15).map(item=>({
-      source,
-      title: item.title||'',
-      link: item.link||item.guid||'#',
-      pubDate: parseRssDate(item.pubDate),
-      thumb: extractImg(item),
-      categories: item.categories||[],
-    }));
-  }catch{ return []; }
+    const items = await fetchFeedDirect(source);
+    if(items.length) return items;
+  }catch{}
+  try{ return await fetchFeedFallback(source); }catch{}
+  return [];
 }
 
 // ─── Load all ────────────────────────────────────────────────────────────────
 async function loadAll(){
+  // Clear interval BEFORE async work — prevents double-invocation if the
+  // timer fires again while a slow fetch is still in flight.
+  clearInterval(refreshInterval);
+  refreshInterval = null;
+
   showSkeletons('live-feed',8);
   const btn = document.getElementById('refresh-btn');
   btn.classList.add('spinning');
@@ -1058,13 +1117,12 @@ async function loadAll(){
   document.getElementById('live-count').textContent = allArticles.length;
   document.getElementById('article-count').textContent = allArticles.length;
 
-  const now = new Date();
-  // reset auto-refresh
-  clearInterval(refreshInterval);
+  // Restart auto-refresh countdown
   nextRefreshAt = Date.now() + 5*60*1000;
   refreshInterval = setInterval(()=>{
     const left = Math.max(0, Math.ceil((nextRefreshAt-Date.now())/1000));
-    document.getElementById('refresh-timer').textContent = `Auto-refresh in ${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}`;
+    document.getElementById('refresh-timer').textContent =
+      `Auto-refresh in ${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}`;
     if(left===0) loadAll();
   }, 1000);
 
