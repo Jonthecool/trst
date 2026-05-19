@@ -262,6 +262,10 @@ nav::-webkit-scrollbar{display:none}
 /* ── Auto-refresh countdown ── */
 #refresh-timer{font-size:.6rem;color:var(--dim)}
 
+/* ── Source links in polls / markets ── */
+.src-link{color:var(--blue);text-decoration:none;font-weight:600;border-bottom:1px dotted var(--blue);padding-bottom:1px;transition:color .15s,border-color .15s}
+.src-link:hover,.src-link:active{color:#60a5fa;border-color:#60a5fa}
+
 /* ── Search results ── */
 #search-panel{display:none;padding:.75rem .75rem 3rem}
 #search-panel.active{display:block}
@@ -410,7 +414,7 @@ footer{text-align:center;padding:1.5rem 1rem .5rem;font-size:.62rem;color:var(--
             <div class="poll-label"><span>Disapprove</span><strong>53%</strong></div>
             <div class="poll-bar-wrap"><div class="poll-bar bar-disapprove" style="width:53%"></div></div>
           </div>
-          <div class="poll-source">RCP avg · Updated daily</div>
+          <div class="poll-source"><a class="src-link" href="https://www.realclearpolitics.com/epolls/other/president_trump_job_approval-6179.html" target="_blank" rel="noopener">RCP avg</a> · Updated daily</div>
           <button class="see-all" onclick="showTab('polls')" style="margin-top:.4rem;display:block">Full polling dashboard →</button>
         </div>
       </div>
@@ -766,7 +770,7 @@ footer{text-align:center;padding:1.5rem 1rem .5rem;font-size:.62rem;color:var(--
       <div class="poll-label"><span>Unsure</span><strong>3.7%</strong></div>
       <div class="poll-bar-wrap"><div class="poll-bar bar-neutral" style="width:3.7%"></div></div>
     </div>
-    <div class="poll-source">Sources: Reuters/Ipsos, Emerson, Morning Consult, Quinnipiac, Fox News Poll · Updated daily</div>
+    <div class="poll-source">Sources: <a class="src-link" href="https://www.ipsos.com/en-us/news-polls" target="_blank" rel="noopener">Reuters/Ipsos</a>, <a class="src-link" href="https://emersoncollegepolling.com/" target="_blank" rel="noopener">Emerson</a>, <a class="src-link" href="https://morningconsult.com/tracking-trump/" target="_blank" rel="noopener">Morning Consult</a>, <a class="src-link" href="https://poll.qu.edu/" target="_blank" rel="noopener">Quinnipiac</a>, <a class="src-link" href="https://www.foxnews.com/official-polls" target="_blank" rel="noopener">Fox News Poll</a> · Updated daily via <a class="src-link" href="https://www.realclearpolitics.com/epolls/other/president_trump_job_approval-6179.html" target="_blank" rel="noopener">RealClearPolitics</a></div>
   </div>
 
   <div class="poll-card">
@@ -780,7 +784,7 @@ footer{text-align:center;padding:1.5rem 1rem .5rem;font-size:.62rem;color:var(--
       <div class="poll-label"><span>Disapprove</span><strong>75%</strong></div>
       <div class="poll-bar-wrap"><div class="poll-bar bar-disapprove" style="width:75%"></div></div>
     </div>
-    <div class="poll-source">Gallup · May 2026</div>
+    <div class="poll-source"><a class="src-link" href="https://news.gallup.com/poll/1600/congress-public.aspx" target="_blank" rel="noopener">Gallup</a> · May 2026</div>
   </div>
 
   <div class="poll-card">
@@ -798,7 +802,7 @@ footer{text-align:center;padding:1.5rem 1rem .5rem;font-size:.62rem;color:var(--
       <div class="poll-label"><span>Undecided / Other</span><strong>10.7%</strong></div>
       <div class="poll-bar-wrap"><div class="poll-bar bar-neutral" style="width:10.7%"></div></div>
     </div>
-    <div class="poll-source">FiveThirtyEight average · D+2.3 · Updated weekly</div>
+    <div class="poll-source"><a class="src-link" href="https://projects.fivethirtyeight.com/polls/generic-ballot/" target="_blank" rel="noopener">FiveThirtyEight</a> average · D+2.3 · Updated weekly</div>
   </div>
 
   <div class="section-hd">Key Issue Polling</div>
@@ -809,7 +813,7 @@ footer{text-align:center;padding:1.5rem 1rem .5rem;font-size:.62rem;color:var(--
         <div class="poll-label" style="font-size:.62rem"><span>Approve handling</span><strong>37%</strong></div>
         <div class="poll-bar-wrap"><div class="poll-bar bar-approve" style="width:37%"></div></div>
       </div>
-      <div class="poll-source">AP-NORC · May 2026</div>
+      <div class="poll-source"><a class="src-link" href="https://apnorc.org/projects/economy/" target="_blank" rel="noopener">AP-NORC</a> · May 2026</div>
     </div>
     <div class="poll-card" style="margin-bottom:0">
       <div class="poll-title" style="font-size:.72rem">Immigration</div>
@@ -817,7 +821,7 @@ footer{text-align:center;padding:1.5rem 1rem .5rem;font-size:.62rem;color:var(--
         <div class="poll-label" style="font-size:.62rem"><span>Approve handling</span><strong>41%</strong></div>
         <div class="poll-bar-wrap"><div class="poll-bar bar-approve" style="width:41%"></div></div>
       </div>
-      <div class="poll-source">Quinnipiac · May 2026</div>
+      <div class="poll-source"><a class="src-link" href="https://poll.qu.edu/" target="_blank" rel="noopener">Quinnipiac</a> · May 2026</div>
     </div>
     <div class="poll-card" style="margin-bottom:0">
       <div class="poll-title" style="font-size:.72rem">Foreign Policy</div>
@@ -825,7 +829,7 @@ footer{text-align:center;padding:1.5rem 1rem .5rem;font-size:.62rem;color:var(--
         <div class="poll-label" style="font-size:.62rem"><span>Approve handling</span><strong>44%</strong></div>
         <div class="poll-bar-wrap"><div class="poll-bar bar-approve" style="width:44%"></div></div>
       </div>
-      <div class="poll-source">Pew Research · April 2026</div>
+      <div class="poll-source"><a class="src-link" href="https://www.pewresearch.org/topic/politics-policy/" target="_blank" rel="noopener">Pew Research</a> · April 2026</div>
     </div>
     <div class="poll-card" style="margin-bottom:0">
       <div class="poll-title" style="font-size:.72rem">Healthcare</div>
@@ -833,7 +837,7 @@ footer{text-align:center;padding:1.5rem 1rem .5rem;font-size:.62rem;color:var(--
         <div class="poll-label" style="font-size:.62rem"><span>Approve handling</span><strong>39%</strong></div>
         <div class="poll-bar-wrap"><div class="poll-bar bar-approve" style="width:39%"></div></div>
       </div>
-      <div class="poll-source">Kaiser Family Foundation · May 2026</div>
+      <div class="poll-source"><a class="src-link" href="https://www.kff.org/health-reform/poll-finding/" target="_blank" rel="noopener">Kaiser Family Foundation</a> · May 2026</div>
     </div>
     <div class="poll-card" style="margin-bottom:0">
       <div class="poll-title" style="font-size:.72rem">Climate / Energy</div>
@@ -841,7 +845,7 @@ footer{text-align:center;padding:1.5rem 1rem .5rem;font-size:.62rem;color:var(--
         <div class="poll-label" style="font-size:.62rem"><span>Approve handling</span><strong>46%</strong></div>
         <div class="poll-bar-wrap"><div class="poll-bar bar-approve" style="width:46%"></div></div>
       </div>
-      <div class="poll-source">Yale Climate Comm. · April 2026</div>
+      <div class="poll-source"><a class="src-link" href="https://climatecommunication.yale.edu/publications/climate-change-in-the-american-mind/" target="_blank" rel="noopener">Yale Climate Comm.</a> · April 2026</div>
     </div>
     <div class="poll-card" style="margin-bottom:0">
       <div class="poll-title" style="font-size:.72rem">Democracy / Election Integrity</div>
@@ -849,15 +853,15 @@ footer{text-align:center;padding:1.5rem 1rem .5rem;font-size:.62rem;color:var(--
         <div class="poll-label" style="font-size:.62rem"><span>Very concerned</span><strong>62%</strong></div>
         <div class="poll-bar-wrap"><div class="poll-bar bar-dem" style="width:62%"></div></div>
       </div>
-      <div class="poll-source">Gallup · May 2026</div>
+      <div class="poll-source"><a class="src-link" href="https://news.gallup.com/poll/1669/general-mood-country.aspx" target="_blank" rel="noopener">Gallup</a> · May 2026</div>
     </div>
   </div>
 
   <div class="section-hd" style="margin-top:.75rem">🗺 Key Senate Race Ratings (2026)</div>
-  <div class="cong-item"><div class="cong-item-hd"><div class="cong-title">Georgia (D-Incumbent)</div><span class="cong-badge" style="background:#f97316;color:#fff">Toss-Up</span></div><div class="cong-meta">R+1.2 in latest polls · Cook Political: Toss-Up</div></div>
-  <div class="cong-item"><div class="cong-item-hd"><div class="cong-title">Michigan (D-Incumbent)</div><span class="cong-badge" style="background:#f97316;color:#fff">Lean D</span></div><div class="cong-meta">D+4.1 · Sabato: Lean Democrat</div></div>
-  <div class="cong-item"><div class="cong-item-hd"><div class="cong-title">Arizona (R-Incumbent)</div><span class="cong-badge" style="background:#f97316;color:#fff">Toss-Up</span></div><div class="cong-meta">R+0.8 · Cook Political: Toss-Up</div></div>
-  <div class="cong-item"><div class="cong-item-hd"><div class="cong-title">Montana (R-Open)</div><span class="cong-badge" style="background:#7c3aed;color:#fff">Lean R</span></div><div class="cong-meta">R+6.2 · Sabato: Likely Republican</div></div>
+  <div class="cong-item"><div class="cong-item-hd"><div class="cong-title">Georgia (D-Incumbent)</div><span class="cong-badge" style="background:#f97316;color:#fff">Toss-Up</span></div><div class="cong-meta">R+1.2 in latest polls · <a class="src-link" href="https://www.cookpolitical.com/ratings/senate-race-ratings" target="_blank" rel="noopener">Cook Political</a>: Toss-Up</div></div>
+  <div class="cong-item"><div class="cong-item-hd"><div class="cong-title">Michigan (D-Incumbent)</div><span class="cong-badge" style="background:#f97316;color:#fff">Lean D</span></div><div class="cong-meta">D+4.1 · <a class="src-link" href="https://centerforpolitics.org/crystalball/senate/" target="_blank" rel="noopener">Sabato's Crystal Ball</a>: Lean Democrat</div></div>
+  <div class="cong-item"><div class="cong-item-hd"><div class="cong-title">Arizona (R-Incumbent)</div><span class="cong-badge" style="background:#f97316;color:#fff">Toss-Up</span></div><div class="cong-meta">R+0.8 · <a class="src-link" href="https://www.cookpolitical.com/ratings/senate-race-ratings" target="_blank" rel="noopener">Cook Political</a>: Toss-Up</div></div>
+  <div class="cong-item"><div class="cong-item-hd"><div class="cong-title">Montana (R-Open)</div><span class="cong-badge" style="background:#7c3aed;color:#fff">Lean R</span></div><div class="cong-meta">R+6.2 · <a class="src-link" href="https://centerforpolitics.org/crystalball/senate/" target="_blank" rel="noopener">Sabato's Crystal Ball</a>: Likely Republican</div></div>
 </div>
 
 <!-- ─── MARKETS ───────────────────────────────────────────────────── -->
@@ -865,7 +869,7 @@ footer{text-align:center;padding:1.5rem 1rem .5rem;font-size:.62rem;color:var(--
   <div class="card" style="margin-bottom:.75rem">
     <div class="card-header"><span class="card-title">⚠️ Display Notice</span></div>
     <div class="card-body" style="font-size:.72rem;color:var(--muted);line-height:1.6">
-      Market data below is for political context and reference. Figures are approximate and delayed. For live trading data visit Bloomberg, CNBC, or MarketWatch.
+      Market data below is for political context and reference. Figures are approximate and delayed. For live trading data visit <a class="src-link" href="https://www.bloomberg.com/markets" target="_blank" rel="noopener">Bloomberg</a>, <a class="src-link" href="https://www.cnbc.com/markets/" target="_blank" rel="noopener">CNBC</a>, or <a class="src-link" href="https://www.marketwatch.com/" target="_blank" rel="noopener">MarketWatch</a>.
     </div>
   </div>
 
@@ -882,23 +886,23 @@ footer{text-align:center;padding:1.5rem 1rem .5rem;font-size:.62rem;color:var(--
   <div class="section-hd">📰 Political-Economic Context</div>
   <div class="cong-item">
     <div class="cong-item-hd"><div class="cong-title">Federal Reserve — Next Meeting</div><span class="cong-badge bg-pending">Jun 17–18</span></div>
-    <div class="cong-meta">CME FedWatch: 78% probability of no change · 22% chance of 25bps cut · CPI data key</div>
+    <div class="cong-meta"><a class="src-link" href="https://www.cmegroup.com/markets/interest-rates/cme-fedwatch-tool.html" target="_blank" rel="noopener">CME FedWatch</a>: 78% probability of no change · 22% chance of 25bps cut · CPI data key</div>
   </div>
   <div class="cong-item">
     <div class="cong-item-hd"><div class="cong-title">U.S. Unemployment Rate</div><span class="cong-badge bg-passed">4.1%</span></div>
-    <div class="cong-meta">Bureau of Labor Statistics · April 2026 · 175k jobs added</div>
+    <div class="cong-meta"><a class="src-link" href="https://www.bls.gov/news.release/empsit.nr0.htm" target="_blank" rel="noopener">Bureau of Labor Statistics</a> · April 2026 · 175k jobs added</div>
   </div>
   <div class="cong-item">
     <div class="cong-item-hd"><div class="cong-title">Consumer Price Index (CPI)</div><span class="cong-badge bg-pending">+3.2% YoY</span></div>
-    <div class="cong-meta">BLS · April 2026 · Core CPI: +3.6% · Energy prices remain elevated</div>
+    <div class="cong-meta"><a class="src-link" href="https://www.bls.gov/cpi/" target="_blank" rel="noopener">BLS</a> · April 2026 · Core CPI: +3.6% · Energy prices remain elevated</div>
   </div>
   <div class="cong-item">
     <div class="cong-item-hd"><div class="cong-title">U.S. National Debt</div><span class="cong-badge bg-failed">$37.2T</span></div>
-    <div class="cong-meta">U.S. Treasury · Debt ceiling suspended through Jan 1, 2028</div>
+    <div class="cong-meta"><a class="src-link" href="https://fiscaldata.treasury.gov/datasets/debt-to-the-penny/debt-to-the-penny" target="_blank" rel="noopener">U.S. Treasury</a> · Debt ceiling suspended through Jan 1, 2028</div>
   </div>
   <div class="cong-item">
     <div class="cong-item-hd"><div class="cong-title">GDP Growth (Q1 2026)</div><span class="cong-badge bg-passed">+2.1%</span></div>
-    <div class="cong-meta">Bureau of Economic Analysis · Annualized rate · Advance estimate</div>
+    <div class="cong-meta"><a class="src-link" href="https://www.bea.gov/data/gdp/gross-domestic-product" target="_blank" rel="noopener">Bureau of Economic Analysis</a> · Annualized rate · Advance estimate</div>
   </div>
 </div>
 
@@ -946,14 +950,32 @@ let currentTab = 'home';
 
 // ─── Utils ──────────────────────────────────────────────────────────────────
 function escH(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// rss2json returns dates as "YYYY-MM-DD HH:MM:SS" in UTC.
+// new Date("YYYY-MM-DD HH:MM:SS") parses as local time in Chrome/V8,
+// making articles appear hours in the future. Appending 'Z' forces UTC.
+function parseRssDate(str){
+  if(!str) return null;
+  // Already ISO with offset/Z — trust it
+  if(/[TZ+]/.test(str)) { const d=new Date(str); return isNaN(d)?null:d; }
+  // "YYYY-MM-DD HH:MM:SS" — treat as UTC
+  const d = new Date(str.replace(' ','T')+'Z');
+  return isNaN(d)?null:d;
+}
+
 function timeAgo(d){
-  if(!d) return '';
-  const m = Math.floor((Date.now()-d)/60000);
+  if(!d||isNaN(d.getTime())) return '';
+  const ms = Date.now()-d.getTime();
+  if(ms<0) return 'just now'; // clock-skew guard
+  const m = Math.floor(ms/60000);
   if(m<1) return 'just now';
   if(m<60) return m+'m ago';
   const h = Math.floor(m/60);
   if(h<24) return h+'h ago';
-  return Math.floor(h/24)+'d ago';
+  if(h<48) return 'yesterday';
+  const days = Math.floor(h/24);
+  if(days<7) return days+'d ago';
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
 }
 function extractImg(item){
   if(item.thumbnail && /^https?:\/\//.test(item.thumbnail)) return item.thumbnail;
@@ -1015,7 +1037,7 @@ async function fetchFeed(source){
       source,
       title: item.title||'',
       link: item.link||item.guid||'#',
-      pubDate: item.pubDate?new Date(item.pubDate):null,
+      pubDate: parseRssDate(item.pubDate),
       thumb: extractImg(item),
       categories: item.categories||[],
     }));
