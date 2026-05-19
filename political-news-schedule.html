@@ -3,474 +3,480 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#1a2744" />
-  <title>Daily Political News Schedule</title>
+  <meta name="theme-color" content="#0f172a" />
+  <title>Live Political News</title>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: #0f172a;
       color: #e2e8f0;
       min-height: 100vh;
-      padding-bottom: 2rem;
     }
 
+    /* ── Header ── */
     header {
-      background: linear-gradient(135deg, #1a2744, #0f3460);
-      padding: 1.5rem 1rem 1rem;
-      text-align: center;
-      border-bottom: 3px solid #e63946;
+      background: #0f172a;
+      border-bottom: 2px solid #e63946;
+      padding: 0.85rem 1rem 0;
       position: sticky;
       top: 0;
-      z-index: 100;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.5);
+      z-index: 200;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.6);
     }
 
-    header h1 {
-      font-size: 1.25rem;
-      font-weight: 700;
-      letter-spacing: 0.03em;
-      color: #f1f5f9;
-    }
-
-    header p {
-      font-size: 0.75rem;
-      color: #94a3b8;
-      margin-top: 0.25rem;
-    }
-
-    .date-badge {
-      display: inline-block;
-      background: #e63946;
-      color: white;
-      font-size: 0.7rem;
-      font-weight: 700;
-      padding: 0.2rem 0.6rem;
-      border-radius: 999px;
-      margin-top: 0.5rem;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-    }
-
-    .section-label {
-      font-size: 0.65rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: #64748b;
-      padding: 1.25rem 1rem 0.4rem;
-    }
-
-    .card {
-      margin: 0.4rem 0.75rem;
-      background: #1e293b;
-      border-radius: 12px;
-      overflow: hidden;
+    .header-top {
       display: flex;
-      align-items: stretch;
-      box-shadow: 0 1px 6px rgba(0,0,0,0.3);
-      transition: transform 0.15s;
-    }
-
-    .card:active {
-      transform: scale(0.98);
-    }
-
-    .time-bar {
-      width: 72px;
-      min-width: 72px;
-      display: flex;
-      flex-direction: column;
       align-items: center;
-      justify-content: center;
-      padding: 0.75rem 0.25rem;
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: #f1f5f9;
-      gap: 0.1rem;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
     }
 
-    .time-bar .ampm {
-      font-size: 0.6rem;
-      font-weight: 400;
-      opacity: 0.75;
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
 
-    .card-body {
-      flex: 1;
-      padding: 0.75rem 0.75rem 0.75rem 0;
-      border-left: 1px solid rgba(255,255,255,0.06);
-    }
-
-    .card-body .show-name {
-      font-size: 0.875rem;
-      font-weight: 700;
-      color: #f1f5f9;
-      line-height: 1.2;
-    }
-
-    .card-body .network {
-      font-size: 0.7rem;
-      color: #94a3b8;
-      margin-top: 0.15rem;
-    }
-
-    .card-body .desc {
-      font-size: 0.72rem;
-      color: #64748b;
-      margin-top: 0.35rem;
-      line-height: 1.4;
-    }
-
-    .tag {
-      display: inline-block;
-      font-size: 0.6rem;
-      font-weight: 600;
-      padding: 0.15rem 0.45rem;
-      border-radius: 999px;
-      margin-top: 0.4rem;
-      letter-spacing: 0.04em;
-    }
-
-    .tag-live    { background: #e63946; color: white; }
-    .tag-brief   { background: #2563eb; color: white; }
-    .tag-analysis{ background: #7c3aed; color: white; }
-    .tag-hearing { background: #d97706; color: white; }
-    .tag-recap   { background: #0f766e; color: white; }
-
-    /* color side bars per block */
-    .block-morning .time-bar  { background: #1e3a5f; }
-    .block-midday  .time-bar  { background: #1e4a3a; }
-    .block-afternoon .time-bar{ background: #3d2a0f; }
-    .block-evening .time-bar  { background: #3b1f2b; }
-    .block-night   .time-bar  { background: #1a1a3e; }
-
-    .live-dot {
-      display: inline-block;
-      width: 6px;
-      height: 6px;
+    .logo-dot {
+      width: 10px; height: 10px;
       background: #e63946;
       border-radius: 50%;
-      margin-right: 4px;
-      animation: pulse 1.5s infinite;
-      vertical-align: middle;
+      animation: pulse 1.4s infinite;
+      flex-shrink: 0;
     }
 
     @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
+      0%,100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: 0.4; transform: scale(0.85); }
     }
 
-    .now-indicator {
-      margin: 0.5rem 0.75rem 0;
-      padding: 0.5rem 0.75rem;
-      background: rgba(230, 57, 70, 0.12);
-      border: 1px solid rgba(230, 57, 70, 0.3);
-      border-radius: 8px;
+    .logo h1 {
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      color: #f1f5f9;
+    }
+
+    .header-meta {
+      font-size: 0.65rem;
+      color: #64748b;
+      text-align: right;
+      line-height: 1.5;
+    }
+
+    #last-updated { color: #94a3b8; }
+
+    /* ── Source tabs ── */
+    .tabs {
+      display: flex;
+      gap: 0.4rem;
+      overflow-x: auto;
+      padding-bottom: 0.6rem;
+      scrollbar-width: none;
+    }
+    .tabs::-webkit-scrollbar { display: none; }
+
+    .tab {
+      flex-shrink: 0;
+      padding: 0.3rem 0.75rem;
+      border-radius: 999px;
       font-size: 0.7rem;
-      color: #fca5a5;
+      font-weight: 600;
+      border: 1px solid #334155;
+      color: #94a3b8;
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .tab.active, .tab:active {
+      background: #e63946;
+      border-color: #e63946;
+      color: white;
+    }
+
+    /* ── Toolbar ── */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.65rem 1rem;
+      border-bottom: 1px solid #1e293b;
+    }
+
+    .count { font-size: 0.72rem; color: #64748b; }
+    .count span { color: #94a3b8; font-weight: 600; }
+
+    #refresh-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      color: #94a3b8;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.35rem 0.7rem;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    #refresh-btn:active { background: #334155; }
+    #refresh-btn svg { transition: transform 0.4s; }
+    #refresh-btn.spinning svg { transform: rotate(360deg); }
+
+    /* ── Feed container ── */
+    #feed {
+      padding: 0.6rem 0.75rem 2rem;
+    }
+
+    /* ── Article card ── */
+    .article {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      background: #1e293b;
+      border-radius: 12px;
+      margin-bottom: 0.6rem;
+      overflow: hidden;
+      border: 1px solid #293548;
+      transition: transform 0.12s, border-color 0.12s;
+    }
+
+    .article:active { transform: scale(0.985); border-color: #475569; }
+
+    .article-inner {
+      display: flex;
+      gap: 0;
+    }
+
+    .article-thumb {
+      width: 90px;
+      min-width: 90px;
+      height: 90px;
+      object-fit: cover;
+      background: #0f172a;
+    }
+
+    .article-thumb-placeholder {
+      width: 90px;
+      min-width: 90px;
+      height: 90px;
+      background: #0f172a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+    }
+
+    .article-content {
+      flex: 1;
+      padding: 0.65rem 0.75rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-width: 0;
+    }
+
+    .article-source-row {
       display: flex;
       align-items: center;
       gap: 0.4rem;
+      margin-bottom: 0.3rem;
     }
 
-    footer {
+    .source-badge {
+      font-size: 0.6rem;
+      font-weight: 700;
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+    }
+
+    .article-age {
+      font-size: 0.6rem;
+      color: #475569;
+    }
+
+    .article-title {
+      font-size: 0.82rem;
+      font-weight: 600;
+      line-height: 1.35;
+      color: #e2e8f0;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* ── Skeleton loaders ── */
+    .skeleton {
+      background: #1e293b;
+      border-radius: 12px;
+      margin-bottom: 0.6rem;
+      height: 90px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .skeleton::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 50%, transparent 100%);
+      animation: shimmer 1.4s infinite;
+    }
+
+    @keyframes shimmer {
+      0%   { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    /* ── Error / empty ── */
+    .status-msg {
       text-align: center;
-      padding: 1.5rem 1rem 0.5rem;
-      font-size: 0.65rem;
-      color: #334155;
+      padding: 2.5rem 1.5rem;
+      color: #475569;
+      font-size: 0.82rem;
+      line-height: 1.6;
     }
 
-    @media (min-width: 480px) {
-      .card { margin: 0.4rem 1.25rem; }
-      header h1 { font-size: 1.5rem; }
+    .status-msg .icon { font-size: 2rem; margin-bottom: 0.5rem; }
+
+    /* ── Source color map ── */
+    .src-npr       { background: #7c3aed; color: #fff; }
+    .src-apnews    { background: #c2410c; color: #fff; }
+    .src-politico  { background: #1d4ed8; color: #fff; }
+    .src-thehill   { background: #0f766e; color: #fff; }
+    .src-reuters   { background: #b45309; color: #fff; }
+    .src-foxnews   { background: #1e40af; color: #fff; }
+    .src-cnn       { background: #dc2626; color: #fff; }
+    .src-nbc       { background: #059669; color: #fff; }
+
+    @media (min-width: 520px) {
+      #feed { padding: 0.75rem 1.25rem 2rem; }
+      .article-thumb, .article-thumb-placeholder { width: 110px; min-width: 110px; height: 100px; }
     }
   </style>
 </head>
 <body>
 
 <header>
-  <h1>&#x1F4F0; Daily Political News</h1>
-  <p>United States — Eastern Time</p>
-  <div class="date-badge" id="today-date">Loading...</div>
+  <div class="header-top">
+    <div class="logo">
+      <div class="logo-dot"></div>
+      <h1>Live Political News</h1>
+    </div>
+    <div class="header-meta">
+      <div id="today-date"></div>
+      <div id="last-updated">Loading…</div>
+    </div>
+  </div>
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-src="all">All</button>
+    <button class="tab" data-src="apnews">AP News</button>
+    <button class="tab" data-src="politico">Politico</button>
+    <button class="tab" data-src="thehill">The Hill</button>
+    <button class="tab" data-src="npr">NPR</button>
+    <button class="tab" data-src="reuters">Reuters</button>
+    <button class="tab" data-src="foxnews">Fox News</button>
+  </div>
 </header>
 
-<!-- NOW indicator (shown via JS) -->
-<div class="now-indicator" id="now-bar" style="display:none">
-  <span class="live-dot"></span>
-  <span id="now-text">Currently: —</span>
+<div class="toolbar">
+  <div class="count">Showing <span id="article-count">—</span> stories</div>
+  <button id="refresh-btn" onclick="loadAll()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+    </svg>
+    Refresh
+  </button>
 </div>
 
-<!-- ═══════════ MORNING ═══════════ -->
-<div class="section-label">Morning</div>
-
-<div class="card block-morning">
-  <div class="time-bar">5:00<span class="ampm">AM</span></div>
-  <div class="card-body">
-    <div class="show-name">Morning Briefing Round-Up</div>
-    <div class="network">AP / Reuters / NPR</div>
-    <div class="desc">Overnight political developments, international wire updates, and pre-market policy news.</div>
-    <span class="tag tag-recap">Recap</span>
-  </div>
-</div>
-
-<div class="card block-morning">
-  <div class="time-bar">6:00<span class="ampm">AM</span></div>
-  <div class="card-body">
-    <div class="show-name">Morning Edition</div>
-    <div class="network">NPR</div>
-    <div class="desc">In-depth political reporting, Congressional updates, and domestic policy analysis.</div>
-    <span class="tag tag-analysis">Analysis</span>
-  </div>
-</div>
-
-<div class="card block-morning">
-  <div class="time-bar">6:00<span class="ampm">AM</span></div>
-  <div class="card-body">
-    <div class="show-name">Morning Joe</div>
-    <div class="network">MSNBC</div>
-    <div class="desc">Political panel discussions, guest lawmakers, and top-of-the-day headlines.</div>
-    <span class="tag tag-live">Live</span>
-  </div>
-</div>
-
-<div class="card block-morning">
-  <div class="time-bar">7:00<span class="ampm">AM</span></div>
-  <div class="card-body">
-    <div class="show-name">Good Morning America — Politics Segment</div>
-    <div class="network">ABC News</div>
-    <div class="desc">Breaking political stories and Washington correspondent reports.</div>
-    <span class="tag tag-live">Live</span>
-  </div>
-</div>
-
-<div class="card block-morning">
-  <div class="time-bar">7:00<span class="ampm">AM</span></div>
-  <div class="card-body">
-    <div class="show-name">Fox &amp; Friends First / Fox &amp; Friends</div>
-    <div class="network">Fox News</div>
-    <div class="desc">Conservative-leaning political commentary, breaking news, and lawmaker interviews.</div>
-    <span class="tag tag-live">Live</span>
-  </div>
-</div>
-
-<div class="card block-morning">
-  <div class="time-bar">8:00<span class="ampm">AM</span></div>
-  <div class="card-body">
-    <div class="show-name">New Day / CNN This Morning</div>
-    <div class="network">CNN</div>
-    <div class="desc">Top political stories, live Congressional reporting, and expert panels.</div>
-    <span class="tag tag-live">Live</span>
-  </div>
-</div>
-
-<div class="card block-morning">
-  <div class="time-bar">9:00<span class="ampm">AM</span></div>
-  <div class="card-body">
-    <div class="show-name">Congressional Session Opens</div>
-    <div class="network">C-SPAN / Senate / House Floors</div>
-    <div class="desc">House and Senate floor proceedings begin. Committee hearings often scheduled from this hour.</div>
-    <span class="tag tag-hearing">Hearing</span>
-  </div>
-</div>
-
-<!-- ═══════════ MIDDAY ═══════════ -->
-<div class="section-label">Midday</div>
-
-<div class="card block-midday">
-  <div class="time-bar">12:00<span class="ampm">PM</span></div>
-  <div class="card-body">
-    <div class="show-name">White House Press Briefing</div>
-    <div class="network">White House / C-SPAN / All Networks</div>
-    <div class="desc">Daily press secretary briefing — official administration statements and journalist Q&amp;A. Time may vary.</div>
-    <span class="tag tag-brief">Briefing</span>
-    <span class="tag tag-live">Live</span>
-  </div>
-</div>
-
-<div class="card block-midday">
-  <div class="time-bar">12:30<span class="ampm">PM</span></div>
-  <div class="card-body">
-    <div class="show-name">Inside Politics</div>
-    <div class="network">CNN</div>
-    <div class="desc">Midday political update: Capitol Hill reporting, polling data breakdowns, and White House reaction.</div>
-    <span class="tag tag-analysis">Analysis</span>
-  </div>
-</div>
-
-<div class="card block-midday">
-  <div class="time-bar">1:00<span class="ampm">PM</span></div>
-  <div class="card-body">
-    <div class="show-name">State Dept. / Pentagon Briefing</div>
-    <div class="network">C-SPAN / Various</div>
-    <div class="desc">Foreign policy and defense briefings held several times per week. Check daily schedule.</div>
-    <span class="tag tag-brief">Briefing</span>
-  </div>
-</div>
-
-<!-- ═══════════ AFTERNOON ═══════════ -->
-<div class="section-label">Afternoon</div>
-
-<div class="card block-afternoon">
-  <div class="time-bar">2:00<span class="ampm">PM</span></div>
-  <div class="card-body">
-    <div class="show-name">Congressional Committee Hearings</div>
-    <div class="network">C-SPAN 2 &amp; 3</div>
-    <div class="desc">Senate and House committee hearings on legislation, oversight, and confirmations. Peak afternoon slot.</div>
-    <span class="tag tag-hearing">Hearing</span>
-    <span class="tag tag-live">Live</span>
-  </div>
-</div>
-
-<div class="card block-afternoon">
-  <div class="time-bar">3:00<span class="ampm">PM</span></div>
-  <div class="card-body">
-    <div class="show-name">The Lead with Jake Tapper</div>
-    <div class="network">CNN</div>
-    <div class="desc">Top political stories of the day with expert guests and on-the-ground reporters.</div>
-    <span class="tag tag-live">Live</span>
-  </div>
-</div>
-
-<div class="card block-afternoon">
-  <div class="time-bar">4:00<span class="ampm">PM</span></div>
-  <div class="card-body">
-    <div class="show-name">The Situation Room</div>
-    <div class="network">CNN</div>
-    <div class="desc">Breaking political news, national security updates, and Congressional developments.</div>
-    <span class="tag tag-live">Live</span>
-  </div>
-</div>
-
-<div class="card block-afternoon">
-  <div class="time-bar">4:00<span class="ampm">PM</span></div>
-  <div class="card-body">
-    <div class="show-name">Your World with Neil Cavuto</div>
-    <div class="network">Fox News</div>
-    <div class="desc">Economic policy, fiscal legislation, and political market impact coverage.</div>
-    <span class="tag tag-analysis">Analysis</span>
-  </div>
-</div>
-
-<!-- ═══════════ EVENING ═══════════ -->
-<div class="section-label">Evening</div>
-
-<div class="card block-evening">
-  <div class="time-bar">6:30<span class="ampm">PM</span></div>
-  <div class="card-body">
-    <div class="show-name">Network Evening News</div>
-    <div class="network">ABC / NBC / CBS</div>
-    <div class="desc">ABC World News Tonight, NBC Nightly News, CBS Evening News — flagship political summaries.</div>
-    <span class="tag tag-recap">Recap</span>
-  </div>
-</div>
-
-<div class="card block-evening">
-  <div class="time-bar">7:00<span class="ampm">PM</span></div>
-  <div class="card-body">
-    <div class="show-name">PBS NewsHour</div>
-    <div class="network">PBS</div>
-    <div class="desc">Long-form political journalism: in-depth policy segments, lawmaker interviews, and investigative pieces.</div>
-    <span class="tag tag-analysis">Analysis</span>
-  </div>
-</div>
-
-<div class="card block-evening">
-  <div class="time-bar">8:00<span class="ampm">PM</span></div>
-  <div class="card-body">
-    <div class="show-name">Primetime Political Lineup</div>
-    <div class="network">Fox News / MSNBC / CNN</div>
-    <div class="desc">Fox: Ingraham Angle / Hannity &nbsp;|&nbsp; MSNBC: All In / Rachel Maddow &nbsp;|&nbsp; CNN: Anderson Cooper 360</div>
-    <span class="tag tag-live">Live</span>
-  </div>
-</div>
-
-<div class="card block-evening">
-  <div class="time-bar">9:00<span class="ampm">PM</span></div>
-  <div class="card-body">
-    <div class="show-name">The Rachel Maddow Show</div>
-    <div class="network">MSNBC</div>
-    <div class="desc">Deep-dive investigative political reporting, document analysis, and historical political context.</div>
-    <span class="tag tag-analysis">Analysis</span>
-  </div>
-</div>
-
-<!-- ═══════════ LATE NIGHT ═══════════ -->
-<div class="section-label">Late Night</div>
-
-<div class="card block-night">
-  <div class="time-bar">10:00<span class="ampm">PM</span></div>
-  <div class="card-body">
-    <div class="show-name">The Last Word / 11th Hour</div>
-    <div class="network">MSNBC</div>
-    <div class="desc">Lawrence O'Donnell and Stephanie Ruhle recap the full day's political developments.</div>
-    <span class="tag tag-recap">Recap</span>
-  </div>
-</div>
-
-<div class="card block-night">
-  <div class="time-bar">11:00<span class="ampm">PM</span></div>
-  <div class="card-body">
-    <div class="show-name">Late Night Political Commentary</div>
-    <div class="network">Comedy Central / NBC / CBS</div>
-    <div class="desc">The Daily Show, Late Night — political satire and commentary summarizing the day's headlines.</div>
-    <span class="tag tag-analysis">Analysis</span>
-  </div>
-</div>
-
-<div class="card block-night">
-  <div class="time-bar">12:00<span class="ampm">AM</span></div>
-  <div class="card-body">
-    <div class="show-name">Overnight Wire &amp; Next-Day Prep</div>
-    <div class="network">AP / Reuters / Bloomberg</div>
-    <div class="desc">Final political dispatches and early reports filing for the next morning's news cycle.</div>
-    <span class="tag tag-recap">Recap</span>
-  </div>
-</div>
-
-<footer>
-  Schedule is approximate and subject to breaking news preemptions. Times in Eastern.<br>
-  Updated daily — tap a card to go to the network's site.
-</footer>
+<div id="feed"></div>
 
 <script>
-  // Set today's date
-  const d = new Date();
-  const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-  document.getElementById('today-date').textContent = d.toLocaleDateString('en-US', opts);
+// ─── Source config ──────────────────────────────────────────────────────────
+const SOURCES = [
+  {
+    id: 'apnews',
+    label: 'AP News',
+    cls: 'src-apnews',
+    icon: '🗞',
+    url: 'https://feeds.apnews.com/rss/apf-politics',
+  },
+  {
+    id: 'politico',
+    label: 'Politico',
+    cls: 'src-politico',
+    icon: '🏛',
+    url: 'https://www.politico.com/rss/politico44.xml',
+  },
+  {
+    id: 'thehill',
+    label: 'The Hill',
+    cls: 'src-thehill',
+    icon: '📋',
+    url: 'https://thehill.com/news/feed/',
+  },
+  {
+    id: 'npr',
+    label: 'NPR Politics',
+    cls: 'src-npr',
+    icon: '🎙',
+    url: 'https://feeds.npr.org/1014/rss.xml',
+  },
+  {
+    id: 'reuters',
+    label: 'Reuters',
+    cls: 'src-reuters',
+    icon: '📡',
+    url: 'https://feeds.reuters.com/Reuters/PoliticsNews',
+  },
+  {
+    id: 'foxnews',
+    label: 'Fox News',
+    cls: 'src-foxnews',
+    icon: '📺',
+    url: 'https://feeds.foxnews.com/foxnews/politics',
+  },
+];
 
-  // Current-show indicator
-  const schedule = [
-    { start: 5*60,   end: 6*60,    name: "Morning Briefing Round-Up" },
-    { start: 6*60,   end: 7*60,    name: "Morning Edition / Morning Joe" },
-    { start: 7*60,   end: 8*60,    name: "Good Morning America / Fox & Friends" },
-    { start: 8*60,   end: 9*60,    name: "CNN This Morning" },
-    { start: 9*60,   end: 12*60,   name: "Congressional Sessions & Committee Hearings" },
-    { start: 12*60,  end: 12*60+30,name: "White House Press Briefing" },
-    { start: 12*60+30,end:13*60,   name: "Inside Politics (CNN)" },
-    { start: 13*60,  end: 14*60,   name: "State Dept. / Pentagon Briefing" },
-    { start: 14*60,  end: 15*60,   name: "Congressional Committee Hearings" },
-    { start: 15*60,  end: 16*60,   name: "The Lead with Jake Tapper" },
-    { start: 16*60,  end: 18*60,   name: "The Situation Room / Cavuto" },
-    { start: 18*60+30,end:19*60,   name: "Network Evening News" },
-    { start: 19*60,  end: 20*60,   name: "PBS NewsHour" },
-    { start: 20*60,  end: 21*60,   name: "Primetime Political Lineup" },
-    { start: 21*60,  end: 22*60,   name: "The Rachel Maddow Show" },
-    { start: 22*60,  end: 23*60,   name: "The Last Word / 11th Hour" },
-    { start: 23*60,  end: 24*60,   name: "Late Night Political Commentary" },
-  ];
+const RSS2JSON = 'https://api.rss2json.com/v1/api.json?rss_url=';
+let allArticles = [];
+let activeFilter = 'all';
 
-  const now = d.getHours() * 60 + d.getMinutes();
-  const current = schedule.find(s => now >= s.start && now < s.end);
-  if (current) {
-    document.getElementById('now-bar').style.display = 'flex';
-    document.getElementById('now-text').textContent = 'On Now: ' + current.name;
+// ─── Fetch one feed ──────────────────────────────────────────────────────────
+async function fetchFeed(source) {
+  try {
+    const res = await fetch(RSS2JSON + encodeURIComponent(source.url), { cache: 'no-store' });
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (data.status !== 'ok' || !data.items) return [];
+    return data.items.slice(0, 12).map(item => ({
+      source: source,
+      title: item.title || '',
+      link: item.link || item.guid || '#',
+      pubDate: item.pubDate ? new Date(item.pubDate) : null,
+      thumb: extractImage(item),
+    }));
+  } catch {
+    return [];
   }
+}
+
+function extractImage(item) {
+  if (item.thumbnail && item.thumbnail.startsWith('http')) return item.thumbnail;
+  if (item.enclosure && item.enclosure.link) return item.enclosure.link;
+  const m = (item.content || item.description || '').match(/src=["']([^"']+\.(jpg|jpeg|png|webp)[^"']*)/i);
+  return m ? m[1] : null;
+}
+
+// ─── Render ──────────────────────────────────────────────────────────────────
+function timeAgo(date) {
+  if (!date) return '';
+  const mins = Math.floor((Date.now() - date) / 60000);
+  if (mins < 1)  return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24)  return `${hrs}h ago`;
+  return `${Math.floor(hrs/24)}d ago`;
+}
+
+function renderArticles(articles) {
+  const feed = document.getElementById('feed');
+  if (!articles.length) {
+    feed.innerHTML = `
+      <div class="status-msg">
+        <div class="icon">📭</div>
+        No stories found for this source.<br>Try refreshing or choosing another tab.
+      </div>`;
+    document.getElementById('article-count').textContent = '0';
+    return;
+  }
+
+  document.getElementById('article-count').textContent = articles.length;
+
+  feed.innerHTML = articles.map(a => `
+    <a class="article" href="${a.link}" target="_blank" rel="noopener">
+      <div class="article-inner">
+        ${a.thumb
+          ? `<img class="article-thumb" src="${a.thumb}" alt="" loading="lazy" onerror="this.style.display='none'">`
+          : `<div class="article-thumb-placeholder">${a.source.icon}</div>`
+        }
+        <div class="article-content">
+          <div class="article-source-row">
+            <span class="source-badge ${a.source.cls}">${a.source.label}</span>
+            <span class="article-age">${timeAgo(a.pubDate)}</span>
+          </div>
+          <div class="article-title">${escHtml(a.title)}</div>
+        </div>
+      </div>
+    </a>
+  `).join('');
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function showSkeletons() {
+  document.getElementById('feed').innerHTML =
+    Array(7).fill('<div class="skeleton"></div>').join('');
+}
+
+// ─── Load all feeds ──────────────────────────────────────────────────────────
+async function loadAll() {
+  showSkeletons();
+  const btn = document.getElementById('refresh-btn');
+  btn.classList.add('spinning');
+
+  const results = await Promise.allSettled(SOURCES.map(fetchFeed));
+  allArticles = results
+    .flatMap(r => r.status === 'fulfilled' ? r.value : [])
+    .sort((a, b) => (b.pubDate || 0) - (a.pubDate || 0));
+
+  const now = new Date();
+  document.getElementById('last-updated').textContent =
+    'Updated ' + now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+
+  applyFilter();
+  btn.classList.remove('spinning');
+}
+
+function applyFilter() {
+  const visible = activeFilter === 'all'
+    ? allArticles
+    : allArticles.filter(a => a.source.id === activeFilter);
+  renderArticles(visible);
+}
+
+// ─── Tabs ────────────────────────────────────────────────────────────────────
+document.getElementById('tabs').addEventListener('click', e => {
+  const tab = e.target.closest('.tab');
+  if (!tab) return;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  tab.classList.add('active');
+  activeFilter = tab.dataset.src;
+  applyFilter();
+});
+
+// ─── Init ────────────────────────────────────────────────────────────────────
+const d = new Date();
+document.getElementById('today-date').textContent =
+  d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+
+loadAll();
+
+// Auto-refresh every 5 minutes
+setInterval(loadAll, 5 * 60 * 1000);
 </script>
 
 </body>
