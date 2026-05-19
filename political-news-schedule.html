@@ -280,6 +280,29 @@ footer{text-align:center;padding:1.5rem 1rem .5rem;font-size:.62rem;color:var(--
   color:var(--dim);padding:.6rem 0 .35rem;display:flex;align-items:center;justify-content:space-between}
 .see-all{font-size:.62rem;color:var(--blue);font-weight:600;cursor:pointer;background:none;border:none}
 
+/* ── New features ── */
+.new-badge{font-size:.55rem;font-weight:800;letter-spacing:.04em;padding:.08rem .32rem;
+  border-radius:4px;background:var(--green);color:#fff;text-transform:uppercase}
+.card-actions{position:absolute;top:.5rem;right:.5rem;display:flex;gap:.3rem}
+.act-btn{background:rgba(15,23,42,.75);border:1px solid var(--border);border-radius:6px;
+  color:var(--muted);font-size:.75rem;padding:.2rem .4rem;cursor:pointer;line-height:1;transition:all .15s}
+.act-btn:active{transform:scale(.9)}
+.act-btn.saved{color:var(--yellow);border-color:var(--yellow)}
+#toast{position:fixed;left:50%;bottom:1.25rem;transform:translateX(-50%) translateY(150%);
+  background:var(--surface);color:var(--text);border:1px solid var(--border);
+  padding:.55rem 1rem;border-radius:999px;font-size:.74rem;font-weight:600;z-index:600;
+  box-shadow:0 4px 20px rgba(0,0,0,.5);transition:transform .3s;pointer-events:none;max-width:90vw}
+#toast.show{transform:translateX(-50%) translateY(0)}
+#offline-banner{display:none;background:var(--accent);color:#fff;text-align:center;
+  font-size:.68rem;font-weight:700;padding:.35rem;position:sticky;top:0;z-index:400}
+body.offline #offline-banner{display:block}
+#to-top{position:fixed;right:.9rem;bottom:.9rem;width:42px;height:42px;border-radius:50%;
+  background:var(--accent);color:#fff;border:none;font-size:1.1rem;cursor:pointer;z-index:500;
+  box-shadow:0 4px 16px rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .25s}
+#to-top.show{opacity:1;pointer-events:auto}
+.ftab .fcount{display:inline-block;margin-left:.3rem;font-size:.58rem;opacity:.65;font-weight:700}
+.ftab.active .fcount{opacity:.9}
+
 @media(min-width:700px){
   .tab-panel,.search-panel{padding:.75rem 1.25rem 3rem}
   header{padding:0 1.25rem}
@@ -288,6 +311,8 @@ footer{text-align:center;padding:1.5rem 1rem .5rem;font-size:.62rem;color:var(--
 </style>
 </head>
 <body>
+
+<div id="offline-banner">⚠ You're offline — showing last loaded stories</div>
 
 <!-- ─── Breaking ticker ─────────────────────────────────────────── -->
 <div id="ticker-wrap">
@@ -925,6 +950,9 @@ footer{text-align:center;padding:1.5rem 1rem .5rem;font-size:.62rem;color:var(--
   </div>
 </div>
 
+<button id="to-top" title="Back to top" aria-label="Back to top">↑</button>
+<div id="toast"></div>
+
 <footer>
   PoliticsPulse · Live data via AP, Politico, The Hill, NPR, Reuters, Fox News RSS<br>
   Schedule times Eastern · Poll data from public aggregators · Not affiliated with any outlet
@@ -946,10 +974,55 @@ const SOURCES = [
 // ─── State ──────────────────────────────────────────────────────────────────
 let allArticles = [];
 let activeFilter = 'all';
-let bookmarks = JSON.parse(localStorage.getItem('pp_bookmarks') || '[]');
+let bookmarks = [];
+try{ bookmarks = JSON.parse(localStorage.getItem('pp_bookmarks')||'[]')||[]; }catch{ bookmarks=[]; }
 let refreshInterval = null;
 let nextRefreshAt = 0;
 let currentTab = 'home';
+
+// "New since last visit" — capture previous visit time, then stamp this one
+let prevVisit = 0;
+try{ prevVisit = parseInt(localStorage.getItem('pp_lastVisit')||'0',10)||0; }catch{}
+try{ localStorage.setItem('pp_lastVisit', String(Date.now())); }catch{}
+
+function isNew(a){
+  return prevVisit>0 && a.pubDate && !isNaN(a.pubDate) && a.pubDate.getTime()>prevVisit;
+}
+
+// ─── Toast ──────────────────────────────────────────────────────────────────
+let toastTimer;
+function toast(msg){
+  const el = document.getElementById('toast');
+  if(!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>el.classList.remove('show'), 2600);
+}
+
+// ─── Image fallback (replaces ONLY the broken <img>, not the card) ───────────
+function imgErr(img, icon){
+  const ph = document.createElement('div');
+  ph.className = 'art-thumb-ph';
+  ph.textContent = icon;
+  img.replaceWith(ph);
+}
+
+// ─── Share (Web Share API + clipboard fallback) ──────────────────────────────
+async function shareArticle(idx){
+  const a = allArticles[idx];
+  if(!a) return;
+  const data = { title: a.title, url: a.link };
+  try{
+    if(navigator.share){ await navigator.share(data); return; }
+  }catch(e){ if(e && e.name==='AbortError') return; }
+  try{
+    await navigator.clipboard.writeText(a.link);
+    toast('🔗 Link copied to clipboard');
+  }catch{
+    toast(a.link);
+  }
+}
 
 // ─── Utils ──────────────────────────────────────────────────────────────────
 function escH(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -992,9 +1065,11 @@ function saveBMs(){ localStorage.setItem('pp_bookmarks', JSON.stringify(bookmark
 // ─── Article card HTML ───────────────────────────────────────────────────────
 function artHTML(a, idx){
   const bm = isBM(a.link);
+  const icon = escH(a.source.icon);
   const thumb = a.thumb
-    ? `<img class="art-thumb" src="${escH(a.thumb)}" alt="" loading="lazy" onerror="this.parentElement.innerHTML='<div class=art-thumb-ph>${escH(a.source.icon)}</div>'">`
-    : `<div class="art-thumb-ph">${escH(a.source.icon)}</div>`;
+    ? `<img class="art-thumb" src="${escH(a.thumb)}" alt="" loading="lazy" onerror="imgErr(this,'${icon}')">`
+    : `<div class="art-thumb-ph">${icon}</div>`;
+  const newTag = isNew(a) ? `<span class="new-badge">New</span>` : '';
   return `
     <div style="position:relative">
       <a class="art" href="${escH(a.link)}" target="_blank" rel="noopener">
@@ -1003,13 +1078,17 @@ function artHTML(a, idx){
           <div class="art-body">
             <div class="art-meta">
               <span class="src-badge ${a.source.cls}">${escH(a.source.label)}</span>
+              ${newTag}
               <span class="art-age">${timeAgo(a.pubDate)}</span>
             </div>
             <div class="art-title">${escH(a.title)}</div>
           </div>
         </div>
       </a>
-      <button class="bm-btn ${bm?'saved':''}" onclick="toggleBM(${idx})" title="${bm?'Remove bookmark':'Save article'}">${bm?'🔖':'🏷'}</button>
+      <div class="card-actions">
+        <button class="act-btn" onclick="shareArticle(${idx})" title="Share" aria-label="Share">↗</button>
+        <button class="act-btn ${bm?'saved':''}" onclick="toggleBM(${idx})" title="${bm?'Remove bookmark':'Save article'}" aria-label="Bookmark">${bm?'🔖':'🏷'}</button>
+      </div>
     </div>`;
 }
 
@@ -1026,44 +1105,71 @@ function toggleBM(idx){
 
 function updateBMCount(){
   const el = document.getElementById('bm-count');
+  if(!el) return;
   el.textContent = bookmarks.length > 0 ? bookmarks.length : '';
 }
 
 // ─── Parse raw RSS XML ───────────────────────────────────────────────────────
 // Handles both RSS 2.0 (<item>) and Atom (<entry>) feeds.
+// querySelector can't match namespaced tags (media:thumbnail, content:encoded)
+// in XML-parsed docs. getElementsByTagName matches the full qualified name.
+function tagText(parent, name){
+  const el = parent.getElementsByTagName(name)[0];
+  return el ? (el.textContent||'').trim() : '';
+}
+function tagAttr(parent, name, attr){
+  const el = parent.getElementsByTagName(name)[0];
+  return el ? el.getAttribute(attr) : null;
+}
+// Pick the best link: RSS <link>text</link>, or Atom <link rel="alternate" href>
+function pickLink(item){
+  const links = Array.from(item.getElementsByTagName('link'));
+  for(const l of links){
+    const txt = (l.textContent||'').trim();
+    if(txt && /^https?:/i.test(txt)) return txt;        // RSS 2.0
+  }
+  let alt = links.find(l=>l.getAttribute('rel')==='alternate');
+  let none = links.find(l=>!l.getAttribute('rel'));
+  const href = (alt||none||links[0])?.getAttribute('href');
+  if(href) return href;                                  // Atom
+  const guid = tagText(item,'guid');
+  return /^https?:/i.test(guid) ? guid : '#';
+}
+
 function parseRssXml(text, source){
   try{
     const xml = new DOMParser().parseFromString(text,'application/xml');
     if(xml.querySelector('parsererror')) return [];
-    // Support RSS 2.0 items AND Atom entries
+    // Support RSS 2.0 <item> AND Atom <entry>
     const nodes = [...xml.querySelectorAll('item'), ...xml.querySelectorAll('entry')];
     if(!nodes.length) return [];
     return nodes.slice(0,15).map(item=>{
-      const get = sel => item.querySelector(sel)?.textContent?.trim()||'';
-      // <link href="..."/> (Atom) or <link>url</link> (RSS 2.0) or <guid>
-      const linkEl = item.querySelector('link');
-      const link = linkEl?.getAttribute('href') || linkEl?.textContent?.trim() || get('guid') || '#';
+      const title = tagText(item,'title');
+      const link  = pickLink(item);
       // pubDate (RSS) or published/updated (Atom)
-      const pubStr = get('pubDate') || get('published') || get('updated');
-      // thumbnail: media:thumbnail[url], then enclosure, then img in body
-      let thumb = null;
-      const mt = item.querySelector('thumbnail');
-      if(mt) thumb = mt.getAttribute('url');
+      const pubStr = tagText(item,'pubDate') || tagText(item,'published')
+                  || tagText(item,'dc:date') || tagText(item,'updated');
+      // thumbnail: media:thumbnail, media:content, enclosure, then img in body
+      let thumb = tagAttr(item,'media:thumbnail','url')
+               || tagAttr(item,'media:content','url');
       if(!thumb){
-        const enc = item.querySelector('enclosure[url]');
+        const enc = item.getElementsByTagName('enclosure')[0];
         if(enc && /image/i.test(enc.getAttribute('type')||'')) thumb = enc.getAttribute('url');
       }
       if(!thumb){
-        const body = get('encoded')||get('content')||get('description')||get('summary');
-        const m = body.match(/src=["']([^"']+\.(jpg|jpeg|png|webp)[^"']*)/i);
+        const body = tagText(item,'content:encoded') || tagText(item,'content')
+                  || tagText(item,'description') || tagText(item,'summary');
+        const m = body.match(/<img[^>]+src=["']([^"']+)/i)
+               || body.match(/src=["']([^"']+\.(jpg|jpeg|png|webp)[^"']*)/i);
         if(m) thumb = m[1];
       }
+      const d = pubStr ? new Date(pubStr) : null;
       return{
         source,
-        title: get('title'),
+        title,
         link,
-        pubDate: pubStr ? new Date(pubStr) : null,
-        thumb,
+        pubDate: (d && !isNaN(d)) ? d : null,
+        thumb: thumb && /^https?:/i.test(thumb) ? thumb : null,
         categories:[],
       };
     }).filter(a=>a.title&&a.link&&a.link!=='#');
@@ -1074,7 +1180,7 @@ function parseRssXml(text, source){
 // Races two CORS proxies in parallel — whichever returns valid data first wins.
 // Falls back to rss2json (cached ~1h) only if both proxies fail.
 const PROXIES = [
-  url => 'https://corsproxy.io/?' + encodeURIComponent(url),
+  url => 'https://corsproxy.io/?url=' + encodeURIComponent(url),
   url => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
 ];
 
@@ -1129,7 +1235,13 @@ async function fetchFeed(source){
 }
 
 // ─── Load all ────────────────────────────────────────────────────────────────
+let loadingFeeds = false;
 async function loadAll(){
+  // Guard: visibility/online/auto-refresh/manual can all trigger this.
+  // Skip if a load is already in flight to avoid pile-ups & races.
+  if(loadingFeeds) return;
+  loadingFeeds = true;
+
   // Clear interval BEFORE async work — prevents double-invocation
   clearInterval(refreshInterval);
   refreshInterval = null;
@@ -1139,33 +1251,38 @@ async function loadAll(){
   btn.classList.add('spinning');
   setFetchStatus('loading');
 
-  const results = await Promise.allSettled(SOURCES.map(fetchFeed));
-  let liveCount = 0, cachedCount = 0;
-  allArticles = results
-    .flatMap(r=>{
-      if(r.status!=='fulfilled') return [];
-      if(r.value.cached) cachedCount++; else liveCount++;
-      return r.value.items;
-    })
-    .sort((a,b)=>(b.pubDate||0)-(a.pubDate||0));
+  try{
+    const results = await Promise.allSettled(SOURCES.map(fetchFeed));
+    let liveCount = 0, cachedCount = 0;
+    allArticles = results
+      .flatMap(r=>{
+        if(r.status!=='fulfilled') return [];
+        if(r.value.cached) cachedCount++; else liveCount++;
+        return r.value.items;
+      })
+      .sort((a,b)=>(b.pubDate||0)-(a.pubDate||0));
 
-  document.getElementById('live-count').textContent = allArticles.length;
-  document.getElementById('article-count').textContent = allArticles.length;
-  setFetchStatus('done', liveCount, cachedCount);
+    document.getElementById('live-count').textContent = allArticles.length;
+    document.getElementById('article-count').textContent = allArticles.length;
+    setFetchStatus('done', liveCount, cachedCount);
+    updateFilterCounts();
 
-  // Restart auto-refresh countdown
-  nextRefreshAt = Date.now() + 5*60*1000;
-  refreshInterval = setInterval(()=>{
-    const left = Math.max(0, Math.ceil((nextRefreshAt-Date.now())/1000));
-    document.getElementById('refresh-timer').textContent =
-      `Auto-refresh in ${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}`;
-    if(left===0) loadAll();
-  }, 1000);
-
-  updateTicker();
-  updateTrending();
-  renderCurrentTab();
-  btn.classList.remove('spinning');
+    updateTicker();
+    updateTrending();
+    renderCurrentTab();
+  } finally {
+    // Restart auto-refresh countdown even if something above threw
+    nextRefreshAt = Date.now() + 5*60*1000;
+    clearInterval(refreshInterval);
+    refreshInterval = setInterval(()=>{
+      const left = Math.max(0, Math.ceil((nextRefreshAt-Date.now())/1000));
+      document.getElementById('refresh-timer').textContent =
+        `Auto-refresh in ${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}`;
+      if(left===0) loadAll();
+    }, 1000);
+    btn.classList.remove('spinning');
+    loadingFeeds = false;
+  }
 }
 
 function setFetchStatus(state, live=0, cached=0){
@@ -1198,6 +1315,19 @@ function renderCurrentTab(){
   updateBMCount();
 }
 
+// Per-source article counts on the Live News filter pills
+function updateFilterCounts(){
+  document.querySelectorAll('.ftab').forEach(tab=>{
+    const src = tab.dataset.src;
+    const n = src==='all'
+      ? allArticles.length
+      : allArticles.filter(a=>a.source.id===src).length;
+    let c = tab.querySelector('.fcount');
+    if(!c){ c=document.createElement('span'); c.className='fcount'; tab.appendChild(c); }
+    c.textContent = n ? n : '';
+  });
+}
+
 // ─── Skeletons ───────────────────────────────────────────────────────────────
 function showSkeletons(id, n){
   const el = document.getElementById(id);
@@ -1206,7 +1336,15 @@ function showSkeletons(id, n){
 
 // ─── Render Home ─────────────────────────────────────────────────────────────
 function renderHome(){
-  if(!allArticles.length) return;
+  const grid0 = document.getElementById('home-grid');
+  if(!allArticles.length){
+    document.getElementById('hero-source').textContent = '';
+    document.getElementById('hero-title').textContent = 'Unable to load stories';
+    document.getElementById('hero-meta').textContent = 'All feeds unreachable. Check your connection and tap Refresh.';
+    document.getElementById('hero-img').style.display='none';
+    if(grid0) grid0.innerHTML='<div class="status-msg"><span class="ico">📡</span>No stories loaded.<br>Tap Refresh to try again.</div>';
+    return;
+  }
   const hero = allArticles[0];
   const heroEl = document.getElementById('hero');
   const img = document.getElementById('hero-img');
@@ -1262,7 +1400,7 @@ function renderBookmarks(){
     return `<div style="position:relative">
       <a class="art" href="${escH(b.link)}" target="_blank" rel="noopener">
         <div class="art-inner">
-          ${b.thumb?`<img class="art-thumb" src="${escH(b.thumb)}" alt="" loading="lazy">`:
+          ${b.thumb?`<img class="art-thumb" src="${escH(b.thumb)}" alt="" loading="lazy" onerror="imgErr(this,'${escH(b.source.icon)}')">`:
             `<div class="art-thumb-ph">${escH(b.source.icon)}</div>`}
           <div class="art-body">
             <div class="art-meta"><span class="src-badge ${b.source.cls}">${escH(b.source.label)}</span>
@@ -1366,7 +1504,8 @@ async function fetchWeather(){
     389:'⛈️',392:'⛈️',395:'❄️',
   };
   try{
-    const r = await fetch('https://wttr.in/Washington,DC?format=j1');
+    const r = await fetch('https://wttr.in/Washington,DC?format=j1',{signal:makeSignal()});
+    if(!r.ok) throw new Error(r.status);
     const d = await r.json();
     const c = d.current_condition[0];
     const code = parseInt(c.weatherCode);
@@ -1384,6 +1523,10 @@ async function fetchWeather(){
 // ─── Tab routing ──────────────────────────────────────────────────────────────
 function showTab(name){
   currentTab = name;
+  try{ localStorage.setItem('pp_tab', name); }catch{}
+  // Clear any active search so navigation isn't masked by search results
+  const si = document.getElementById('search-input');
+  if(si && si.value){ si.value=''; }
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));
   document.getElementById('search-panel').classList.remove('active');
@@ -1416,9 +1559,9 @@ document.getElementById('search-input').addEventListener('input', e=>{
   if(!q){
     document.getElementById('search-panel').classList.remove('active');
     document.getElementById('main-toolbar').style.display='flex';
-    document.querySelectorAll('.tab-panel').forEach(p=>{
-      if(p.id==='tab-'+currentTab) p.classList.add('active');
-    });
+    const panel = document.getElementById('tab-'+currentTab);
+    if(panel) panel.classList.add('active');
+    renderCurrentTab();
     return;
   }
   searchTimeout = setTimeout(()=>{
@@ -1452,10 +1595,62 @@ if(savedTheme){
   document.getElementById('theme-btn').textContent=savedTheme==='light'?'🌙':'☀️';
 }
 
+// ─── Offline / online ────────────────────────────────────────────────────────
+function syncOnline(){
+  document.body.classList.toggle('offline', !navigator.onLine);
+}
+window.addEventListener('online', ()=>{ syncOnline(); toast('✓ Back online — refreshing'); loadAll(); });
+window.addEventListener('offline', ()=>{ syncOnline(); toast('⚠ You are offline'); });
+syncOnline();
+
+// ─── Pause auto-refresh when tab hidden; refresh on return if stale ──────────
+document.addEventListener('visibilitychange', ()=>{
+  if(document.hidden){
+    clearInterval(refreshInterval);
+    refreshInterval = null;
+  } else {
+    if(navigator.onLine && (!nextRefreshAt || Date.now() >= nextRefreshAt)){
+      loadAll();
+    } else if(!refreshInterval){
+      refreshInterval = setInterval(()=>{
+        const left = Math.max(0, Math.ceil((nextRefreshAt-Date.now())/1000));
+        document.getElementById('refresh-timer').textContent =
+          `Auto-refresh in ${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}`;
+        if(left===0) loadAll();
+      }, 1000);
+    }
+  }
+});
+
+// ─── Back to top ─────────────────────────────────────────────────────────────
+const toTopBtn = document.getElementById('to-top');
+window.addEventListener('scroll', ()=>{
+  toTopBtn.classList.toggle('show', window.scrollY > 600);
+}, {passive:true});
+toTopBtn.addEventListener('click', ()=>window.scrollTo({top:0,behavior:'smooth'}));
+
+// ─── Keyboard shortcuts: "/" focus search, Esc clears ────────────────────────
+document.addEventListener('keydown', e=>{
+  const si = document.getElementById('search-input');
+  if(e.key==='/' && document.activeElement!==si){
+    e.preventDefault(); si.focus();
+  } else if(e.key==='Escape' && document.activeElement===si){
+    si.value=''; si.dispatchEvent(new Event('input')); si.blur();
+  }
+});
+
+// ─── Restore last tab ────────────────────────────────────────────────────────
+let bootTab = 'home';
+try{
+  const t = localStorage.getItem('pp_tab');
+  if(t && document.getElementById('tab-'+t)) bootTab = t;
+}catch{}
+
 // ─── Boot ─────────────────────────────────────────────────────────────────────
 initClock();
 fetchWeather();
 updateBMCount();
+if(bootTab!=='home') showTab(bootTab);
 loadAll();
 </script>
 </body>
