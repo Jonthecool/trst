@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#1a2744" />
+  <title>Daily Political News Schedule</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding-bottom: 2rem;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1a2744, #0f3460);
+      padding: 1.5rem 1rem 1rem;
+      text-align: center;
+      border-bottom: 3px solid #e63946;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.5);
+    }
+
+    header h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      color: #f1f5f9;
+    }
+
+    header p {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      margin-top: 0.25rem;
+    }
+
+    .date-badge {
+      display: inline-block;
+      background: #e63946;
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      margin-top: 0.5rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .section-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #64748b;
+      padding: 1.25rem 1rem 0.4rem;
+    }
+
+    .card {
+      margin: 0.4rem 0.75rem;
+      background: #1e293b;
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      align-items: stretch;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.3);
+      transition: transform 0.15s;
+    }
+
+    .card:active {
+      transform: scale(0.98);
+    }
+
+    .time-bar {
+      width: 72px;
+      min-width: 72px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0.75rem 0.25rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #f1f5f9;
+      gap: 0.1rem;
+    }
+
+    .time-bar .ampm {
+      font-size: 0.6rem;
+      font-weight: 400;
+      opacity: 0.75;
+    }
+
+    .card-body {
+      flex: 1;
+      padding: 0.75rem 0.75rem 0.75rem 0;
+      border-left: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .card-body .show-name {
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: #f1f5f9;
+      line-height: 1.2;
+    }
+
+    .card-body .network {
+      font-size: 0.7rem;
+      color: #94a3b8;
+      margin-top: 0.15rem;
+    }
+
+    .card-body .desc {
+      font-size: 0.72rem;
+      color: #64748b;
+      margin-top: 0.35rem;
+      line-height: 1.4;
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 0.6rem;
+      font-weight: 600;
+      padding: 0.15rem 0.45rem;
+      border-radius: 999px;
+      margin-top: 0.4rem;
+      letter-spacing: 0.04em;
+    }
+
+    .tag-live    { background: #e63946; color: white; }
+    .tag-brief   { background: #2563eb; color: white; }
+    .tag-analysis{ background: #7c3aed; color: white; }
+    .tag-hearing { background: #d97706; color: white; }
+    .tag-recap   { background: #0f766e; color: white; }
+
+    /* color side bars per block */
+    .block-morning .time-bar  { background: #1e3a5f; }
+    .block-midday  .time-bar  { background: #1e4a3a; }
+    .block-afternoon .time-bar{ background: #3d2a0f; }
+    .block-evening .time-bar  { background: #3b1f2b; }
+    .block-night   .time-bar  { background: #1a1a3e; }
+
+    .live-dot {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      background: #e63946;
+      border-radius: 50%;
+      margin-right: 4px;
+      animation: pulse 1.5s infinite;
+      vertical-align: middle;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .now-indicator {
+      margin: 0.5rem 0.75rem 0;
+      padding: 0.5rem 0.75rem;
+      background: rgba(230, 57, 70, 0.12);
+      border: 1px solid rgba(230, 57, 70, 0.3);
+      border-radius: 8px;
+      font-size: 0.7rem;
+      color: #fca5a5;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 1.5rem 1rem 0.5rem;
+      font-size: 0.65rem;
+      color: #334155;
+    }
+
+    @media (min-width: 480px) {
+      .card { margin: 0.4rem 1.25rem; }
+      header h1 { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>&#x1F4F0; Daily Political News</h1>
+  <p>United States — Eastern Time</p>
+  <div class="date-badge" id="today-date">Loading...</div>
+</header>
+
+<!-- NOW indicator (shown via JS) -->
+<div class="now-indicator" id="now-bar" style="display:none">
+  <span class="live-dot"></span>
+  <span id="now-text">Currently: —</span>
+</div>
+
+<!-- ═══════════ MORNING ═══════════ -->
+<div class="section-label">Morning</div>
+
+<div class="card block-morning">
+  <div class="time-bar">5:00<span class="ampm">AM</span></div>
+  <div class="card-body">
+    <div class="show-name">Morning Briefing Round-Up</div>
+    <div class="network">AP / Reuters / NPR</div>
+    <div class="desc">Overnight political developments, international wire updates, and pre-market policy news.</div>
+    <span class="tag tag-recap">Recap</span>
+  </div>
+</div>
+
+<div class="card block-morning">
+  <div class="time-bar">6:00<span class="ampm">AM</span></div>
+  <div class="card-body">
+    <div class="show-name">Morning Edition</div>
+    <div class="network">NPR</div>
+    <div class="desc">In-depth political reporting, Congressional updates, and domestic policy analysis.</div>
+    <span class="tag tag-analysis">Analysis</span>
+  </div>
+</div>
+
+<div class="card block-morning">
+  <div class="time-bar">6:00<span class="ampm">AM</span></div>
+  <div class="card-body">
+    <div class="show-name">Morning Joe</div>
+    <div class="network">MSNBC</div>
+    <div class="desc">Political panel discussions, guest lawmakers, and top-of-the-day headlines.</div>
+    <span class="tag tag-live">Live</span>
+  </div>
+</div>
+
+<div class="card block-morning">
+  <div class="time-bar">7:00<span class="ampm">AM</span></div>
+  <div class="card-body">
+    <div class="show-name">Good Morning America — Politics Segment</div>
+    <div class="network">ABC News</div>
+    <div class="desc">Breaking political stories and Washington correspondent reports.</div>
+    <span class="tag tag-live">Live</span>
+  </div>
+</div>
+
+<div class="card block-morning">
+  <div class="time-bar">7:00<span class="ampm">AM</span></div>
+  <div class="card-body">
+    <div class="show-name">Fox &amp; Friends First / Fox &amp; Friends</div>
+    <div class="network">Fox News</div>
+    <div class="desc">Conservative-leaning political commentary, breaking news, and lawmaker interviews.</div>
+    <span class="tag tag-live">Live</span>
+  </div>
+</div>
+
+<div class="card block-morning">
+  <div class="time-bar">8:00<span class="ampm">AM</span></div>
+  <div class="card-body">
+    <div class="show-name">New Day / CNN This Morning</div>
+    <div class="network">CNN</div>
+    <div class="desc">Top political stories, live Congressional reporting, and expert panels.</div>
+    <span class="tag tag-live">Live</span>
+  </div>
+</div>
+
+<div class="card block-morning">
+  <div class="time-bar">9:00<span class="ampm">AM</span></div>
+  <div class="card-body">
+    <div class="show-name">Congressional Session Opens</div>
+    <div class="network">C-SPAN / Senate / House Floors</div>
+    <div class="desc">House and Senate floor proceedings begin. Committee hearings often scheduled from this hour.</div>
+    <span class="tag tag-hearing">Hearing</span>
+  </div>
+</div>
+
+<!-- ═══════════ MIDDAY ═══════════ -->
+<div class="section-label">Midday</div>
+
+<div class="card block-midday">
+  <div class="time-bar">12:00<span class="ampm">PM</span></div>
+  <div class="card-body">
+    <div class="show-name">White House Press Briefing</div>
+    <div class="network">White House / C-SPAN / All Networks</div>
+    <div class="desc">Daily press secretary briefing — official administration statements and journalist Q&amp;A. Time may vary.</div>
+    <span class="tag tag-brief">Briefing</span>
+    <span class="tag tag-live">Live</span>
+  </div>
+</div>
+
+<div class="card block-midday">
+  <div class="time-bar">12:30<span class="ampm">PM</span></div>
+  <div class="card-body">
+    <div class="show-name">Inside Politics</div>
+    <div class="network">CNN</div>
+    <div class="desc">Midday political update: Capitol Hill reporting, polling data breakdowns, and White House reaction.</div>
+    <span class="tag tag-analysis">Analysis</span>
+  </div>
+</div>
+
+<div class="card block-midday">
+  <div class="time-bar">1:00<span class="ampm">PM</span></div>
+  <div class="card-body">
+    <div class="show-name">State Dept. / Pentagon Briefing</div>
+    <div class="network">C-SPAN / Various</div>
+    <div class="desc">Foreign policy and defense briefings held several times per week. Check daily schedule.</div>
+    <span class="tag tag-brief">Briefing</span>
+  </div>
+</div>
+
+<!-- ═══════════ AFTERNOON ═══════════ -->
+<div class="section-label">Afternoon</div>
+
+<div class="card block-afternoon">
+  <div class="time-bar">2:00<span class="ampm">PM</span></div>
+  <div class="card-body">
+    <div class="show-name">Congressional Committee Hearings</div>
+    <div class="network">C-SPAN 2 &amp; 3</div>
+    <div class="desc">Senate and House committee hearings on legislation, oversight, and confirmations. Peak afternoon slot.</div>
+    <span class="tag tag-hearing">Hearing</span>
+    <span class="tag tag-live">Live</span>
+  </div>
+</div>
+
+<div class="card block-afternoon">
+  <div class="time-bar">3:00<span class="ampm">PM</span></div>
+  <div class="card-body">
+    <div class="show-name">The Lead with Jake Tapper</div>
+    <div class="network">CNN</div>
+    <div class="desc">Top political stories of the day with expert guests and on-the-ground reporters.</div>
+    <span class="tag tag-live">Live</span>
+  </div>
+</div>
+
+<div class="card block-afternoon">
+  <div class="time-bar">4:00<span class="ampm">PM</span></div>
+  <div class="card-body">
+    <div class="show-name">The Situation Room</div>
+    <div class="network">CNN</div>
+    <div class="desc">Breaking political news, national security updates, and Congressional developments.</div>
+    <span class="tag tag-live">Live</span>
+  </div>
+</div>
+
+<div class="card block-afternoon">
+  <div class="time-bar">4:00<span class="ampm">PM</span></div>
+  <div class="card-body">
+    <div class="show-name">Your World with Neil Cavuto</div>
+    <div class="network">Fox News</div>
+    <div class="desc">Economic policy, fiscal legislation, and political market impact coverage.</div>
+    <span class="tag tag-analysis">Analysis</span>
+  </div>
+</div>
+
+<!-- ═══════════ EVENING ═══════════ -->
+<div class="section-label">Evening</div>
+
+<div class="card block-evening">
+  <div class="time-bar">6:30<span class="ampm">PM</span></div>
+  <div class="card-body">
+    <div class="show-name">Network Evening News</div>
+    <div class="network">ABC / NBC / CBS</div>
+    <div class="desc">ABC World News Tonight, NBC Nightly News, CBS Evening News — flagship political summaries.</div>
+    <span class="tag tag-recap">Recap</span>
+  </div>
+</div>
+
+<div class="card block-evening">
+  <div class="time-bar">7:00<span class="ampm">PM</span></div>
+  <div class="card-body">
+    <div class="show-name">PBS NewsHour</div>
+    <div class="network">PBS</div>
+    <div class="desc">Long-form political journalism: in-depth policy segments, lawmaker interviews, and investigative pieces.</div>
+    <span class="tag tag-analysis">Analysis</span>
+  </div>
+</div>
+
+<div class="card block-evening">
+  <div class="time-bar">8:00<span class="ampm">PM</span></div>
+  <div class="card-body">
+    <div class="show-name">Primetime Political Lineup</div>
+    <div class="network">Fox News / MSNBC / CNN</div>
+    <div class="desc">Fox: Ingraham Angle / Hannity &nbsp;|&nbsp; MSNBC: All In / Rachel Maddow &nbsp;|&nbsp; CNN: Anderson Cooper 360</div>
+    <span class="tag tag-live">Live</span>
+  </div>
+</div>
+
+<div class="card block-evening">
+  <div class="time-bar">9:00<span class="ampm">PM</span></div>
+  <div class="card-body">
+    <div class="show-name">The Rachel Maddow Show</div>
+    <div class="network">MSNBC</div>
+    <div class="desc">Deep-dive investigative political reporting, document analysis, and historical political context.</div>
+    <span class="tag tag-analysis">Analysis</span>
+  </div>
+</div>
+
+<!-- ═══════════ LATE NIGHT ═══════════ -->
+<div class="section-label">Late Night</div>
+
+<div class="card block-night">
+  <div class="time-bar">10:00<span class="ampm">PM</span></div>
+  <div class="card-body">
+    <div class="show-name">The Last Word / 11th Hour</div>
+    <div class="network">MSNBC</div>
+    <div class="desc">Lawrence O'Donnell and Stephanie Ruhle recap the full day's political developments.</div>
+    <span class="tag tag-recap">Recap</span>
+  </div>
+</div>
+
+<div class="card block-night">
+  <div class="time-bar">11:00<span class="ampm">PM</span></div>
+  <div class="card-body">
+    <div class="show-name">Late Night Political Commentary</div>
+    <div class="network">Comedy Central / NBC / CBS</div>
+    <div class="desc">The Daily Show, Late Night — political satire and commentary summarizing the day's headlines.</div>
+    <span class="tag tag-analysis">Analysis</span>
+  </div>
+</div>
+
+<div class="card block-night">
+  <div class="time-bar">12:00<span class="ampm">AM</span></div>
+  <div class="card-body">
+    <div class="show-name">Overnight Wire &amp; Next-Day Prep</div>
+    <div class="network">AP / Reuters / Bloomberg</div>
+    <div class="desc">Final political dispatches and early reports filing for the next morning's news cycle.</div>
+    <span class="tag tag-recap">Recap</span>
+  </div>
+</div>
+
+<footer>
+  Schedule is approximate and subject to breaking news preemptions. Times in Eastern.<br>
+  Updated daily — tap a card to go to the network's site.
+</footer>
+
+<script>
+  // Set today's date
+  const d = new Date();
+  const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  document.getElementById('today-date').textContent = d.toLocaleDateString('en-US', opts);
+
+  // Current-show indicator
+  const schedule = [
+    { start: 5*60,   end: 6*60,    name: "Morning Briefing Round-Up" },
+    { start: 6*60,   end: 7*60,    name: "Morning Edition / Morning Joe" },
+    { start: 7*60,   end: 8*60,    name: "Good Morning America / Fox & Friends" },
+    { start: 8*60,   end: 9*60,    name: "CNN This Morning" },
+    { start: 9*60,   end: 12*60,   name: "Congressional Sessions & Committee Hearings" },
+    { start: 12*60,  end: 12*60+30,name: "White House Press Briefing" },
+    { start: 12*60+30,end:13*60,   name: "Inside Politics (CNN)" },
+    { start: 13*60,  end: 14*60,   name: "State Dept. / Pentagon Briefing" },
+    { start: 14*60,  end: 15*60,   name: "Congressional Committee Hearings" },
+    { start: 15*60,  end: 16*60,   name: "The Lead with Jake Tapper" },
+    { start: 16*60,  end: 18*60,   name: "The Situation Room / Cavuto" },
+    { start: 18*60+30,end:19*60,   name: "Network Evening News" },
+    { start: 19*60,  end: 20*60,   name: "PBS NewsHour" },
+    { start: 20*60,  end: 21*60,   name: "Primetime Political Lineup" },
+    { start: 21*60,  end: 22*60,   name: "The Rachel Maddow Show" },
+    { start: 22*60,  end: 23*60,   name: "The Last Word / 11th Hour" },
+    { start: 23*60,  end: 24*60,   name: "Late Night Political Commentary" },
+  ];
+
+  const now = d.getHours() * 60 + d.getMinutes();
+  const current = schedule.find(s => now >= s.start && now < s.end);
+  if (current) {
+    document.getElementById('now-bar').style.display = 'flex';
+    document.getElementById('now-text').textContent = 'On Now: ' + current.name;
+  }
+</script>
+
+</body>
+</html>
