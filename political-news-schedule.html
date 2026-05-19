@@ -1,0 +1,1662 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" id="theme-meta" content="#0f172a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>PoliticsPulse — Live U.S. Political News</title>
+<style>
+:root{
+  --bg:#0f172a;--bg2:#0d1526;--surface:#1e293b;--surface2:#293548;
+  --border:#334155;--text:#e2e8f0;--text2:#cbd5e1;--muted:#94a3b8;--dim:#64748b;
+  --accent:#e63946;--blue:#3b82f6;--green:#10b981;--yellow:#f59e0b;
+  --purple:#8b5cf6;--orange:#f97316;--teal:#14b8a6;
+  --radius:10px;--card-shadow:0 1px 8px rgba(0,0,0,.35);
+}
+[data-theme="light"]{
+  --bg:#f1f5f9;--bg2:#e2e8f0;--surface:#fff;--surface2:#f8fafc;
+  --border:#cbd5e1;--text:#0f172a;--text2:#1e293b;--muted:#475569;--dim:#94a3b8;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* ── Ticker ── */
+#ticker-wrap{background:var(--accent);overflow:hidden;height:28px;display:flex;align-items:center;position:relative;z-index:300}
+#ticker-label{flex-shrink:0;background:#b71c2c;color:#fff;font-size:.65rem;font-weight:800;
+  padding:0 .6rem;height:100%;display:flex;align-items:center;letter-spacing:.08em;white-space:nowrap}
+#ticker-track{display:flex;align-items:center;overflow:hidden;flex:1;height:100%}
+#ticker-inner{display:flex;gap:3rem;animation:tickerScroll 60s linear infinite;white-space:nowrap}
+#ticker-inner span{color:#fff;font-size:.68rem;font-weight:600}
+#ticker-inner span::before{content:"● ";opacity:.6}
+@keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* ── Header ── */
+header{background:var(--bg2);border-bottom:2px solid var(--accent);position:sticky;top:0;z-index:200;
+  padding:0 1rem;box-shadow:0 2px 16px rgba(0,0,0,.5)}
+.header-inner{display:flex;align-items:center;justify-content:space-between;height:52px;gap:.75rem}
+.logo{display:flex;align-items:center;gap:.5rem;flex-shrink:0}
+.live-dot{width:9px;height:9px;background:var(--accent);border-radius:50%;animation:pulse 1.4s infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}}
+.logo h1{font-size:1.1rem;font-weight:900;letter-spacing:-.02em;color:var(--text)}
+.logo h1 span{color:var(--accent)}
+.header-center{flex:1;max-width:340px}
+#search-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  padding:.35rem .75rem;font-size:.78rem;color:var(--text);outline:none;transition:border .2s}
+#search-input:focus{border-color:var(--blue)}
+#search-input::placeholder{color:var(--dim)}
+.header-right{display:flex;align-items:center;gap:.5rem;flex-shrink:0}
+.icon-btn{background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  padding:.35rem .5rem;color:var(--muted);cursor:pointer;font-size:.8rem;transition:all .15s;display:flex;align-items:center}
+.icon-btn:active{background:var(--surface2)}
+#clock-badge{font-size:.68rem;font-weight:700;color:var(--muted);background:var(--surface);
+  border:1px solid var(--border);border-radius:8px;padding:.3rem .55rem;white-space:nowrap}
+
+/* ── Nav ── */
+nav{background:var(--bg2);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+.nav-inner{display:flex;min-width:max-content;padding:0 .75rem}
+.nav-btn{padding:.65rem .85rem;font-size:.72rem;font-weight:700;color:var(--dim);cursor:pointer;
+  border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s;letter-spacing:.02em;background:none;border-top:none;border-left:none;border-right:none}
+.nav-btn:hover{color:var(--muted)}
+.nav-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+.nav-btn .badge{display:inline-block;background:var(--accent);color:#fff;font-size:.55rem;
+  padding:.05rem .3rem;border-radius:999px;margin-left:.3rem;vertical-align:middle}
+
+/* ── Layout ── */
+.tab-panel{display:none;padding:.75rem .75rem 3rem}
+.tab-panel.active{display:block}
+.two-col{display:grid;grid-template-columns:1fr;gap:.75rem}
+@media(min-width:700px){.two-col{grid-template-columns:1fr 320px}}
+
+/* ── Cards ── */
+.card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);
+  box-shadow:var(--card-shadow);overflow:hidden}
+.card-header{padding:.65rem .8rem;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:.72rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.card-body{padding:.75rem}
+
+/* ── Hero ── */
+#hero{border-radius:var(--radius);overflow:hidden;background:var(--surface);border:1px solid var(--border);
+  box-shadow:var(--card-shadow);margin-bottom:.75rem;text-decoration:none;display:block;color:inherit;
+  transition:transform .12s}
+#hero:active{transform:scale(.99)}
+#hero-img{width:100%;height:180px;object-fit:cover;background:var(--surface2);display:block}
+#hero-body{padding:.85rem}
+#hero-source{font-size:.62rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem}
+#hero-title{font-size:1.1rem;font-weight:800;line-height:1.3;color:var(--text)}
+#hero-meta{font-size:.65rem;color:var(--dim);margin-top:.4rem}
+
+/* ── News article cards ── */
+.art{display:block;text-decoration:none;color:inherit;background:var(--surface);
+  border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;
+  transition:transform .12s,border-color .12s;position:relative}
+.art:active{transform:scale(.985);border-color:var(--surface2)}
+.art-inner{display:flex}
+.art-thumb{width:88px;min-width:88px;height:88px;object-fit:cover;background:var(--surface2)}
+.art-thumb-ph{width:88px;min-width:88px;height:88px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:1.5rem}
+.art-body{flex:1;padding:.6rem .7rem;display:flex;flex-direction:column;justify-content:space-between;min-width:0}
+.art-meta{display:flex;align-items:center;gap:.35rem;flex-wrap:wrap}
+.src-badge{font-size:.58rem;font-weight:700;padding:.1rem .38rem;border-radius:4px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+.art-age{font-size:.6rem;color:var(--dim)}
+.art-title{font-size:.8rem;font-weight:600;line-height:1.35;color:var(--text2);
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin-top:.3rem}
+.bm-btn{position:absolute;top:.5rem;right:.5rem;background:rgba(15,23,42,.7);
+  border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:.75rem;
+  padding:.2rem .4rem;cursor:pointer;line-height:1;transition:all .15s}
+.bm-btn.saved{color:#f59e0b;border-color:#f59e0b}
+
+/* ── Grid lists ── */
+.art-list{display:flex;flex-direction:column;gap:.5rem}
+.art-grid{display:grid;grid-template-columns:1fr;gap:.5rem}
+@media(min-width:520px){.art-grid{grid-template-columns:1fr 1fr}}
+
+/* ── Filter tabs ── */
+.filter-row{display:flex;gap:.35rem;overflow-x:auto;padding:.6rem .75rem .4rem;scrollbar-width:none;margin:0 -.75rem}
+.filter-row::-webkit-scrollbar{display:none}
+.ftab{flex-shrink:0;padding:.28rem .65rem;border-radius:999px;font-size:.68rem;font-weight:600;
+  border:1px solid var(--border);color:var(--muted);background:transparent;cursor:pointer;transition:all .15s}
+.ftab.active{background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* ── Toolbar ── */
+.toolbar{display:flex;align-items:center;justify-content:space-between;padding:.5rem .75rem;
+  border-bottom:1px solid var(--border);font-size:.7rem;color:var(--dim)}
+.toolbar strong{color:var(--muted)}
+.refresh-btn{display:flex;align-items:center;gap:.3rem;background:var(--surface);border:1px solid var(--border);
+  border-radius:7px;color:var(--muted);font-size:.68rem;font-weight:600;padding:.3rem .6rem;cursor:pointer}
+.refresh-btn:active{background:var(--surface2)}
+.refresh-btn.spinning svg{animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Skeletons ── */
+.skel{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);
+  height:88px;position:relative;overflow:hidden}
+.skel::after{content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.04),transparent);
+  animation:shimmer 1.4s infinite}
+@keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+
+/* ── Status ── */
+.status-msg{text-align:center;padding:2.5rem 1rem;color:var(--dim);font-size:.82rem;line-height:1.7}
+.status-msg .ico{font-size:2rem;display:block;margin-bottom:.5rem}
+
+/* ── Schedule ── */
+.sched-block{margin-bottom:1.25rem}
+.sched-label{font-size:.62rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--dim);padding:.5rem 0 .35rem}
+.sched-card{display:flex;background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);
+  overflow:hidden;margin-bottom:.45rem;box-shadow:var(--card-shadow);transition:transform .12s}
+.sched-card.on-now{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.sched-card:active{transform:scale(.985)}
+.sched-time{width:68px;min-width:68px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:.6rem .2rem;font-size:.72rem;font-weight:700;color:#fff}
+.sched-time .ampm{font-size:.58rem;font-weight:400;opacity:.75}
+.sched-info{flex:1;padding:.6rem .7rem;border-left:1px solid rgba(255,255,255,.06)}
+.sched-show{font-size:.8rem;font-weight:700;color:var(--text);line-height:1.2}
+.sched-net{font-size:.65rem;color:var(--muted);margin:.1rem 0}
+.sched-desc{font-size:.68rem;color:var(--dim);line-height:1.4;margin-top:.25rem}
+.sched-tags{margin-top:.35rem;display:flex;gap:.3rem;flex-wrap:wrap}
+.stag{font-size:.58rem;font-weight:700;padding:.12rem .4rem;border-radius:999px}
+.stag-live{background:var(--accent);color:#fff}
+.stag-brief{background:var(--blue);color:#fff}
+.stag-analysis{background:var(--purple);color:#fff}
+.stag-hearing{background:var(--yellow);color:#000}
+.stag-recap{background:var(--teal);color:#fff}
+.on-now-banner{display:none;font-size:.6rem;font-weight:700;color:var(--accent);letter-spacing:.05em;margin-bottom:.1rem}
+.sched-card.on-now .on-now-banner{display:block}
+
+/* Block colors */
+.blk-morning .sched-time{background:#1e3a5f}
+.blk-midday  .sched-time{background:#1a3d2b}
+.blk-afternoon .sched-time{background:#3d2505}
+.blk-evening .sched-time{background:#3b1525}
+.blk-night   .sched-time{background:#1a1a3e}
+
+/* ── Polls ── */
+.poll-card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:.75rem;margin-bottom:.6rem}
+.poll-title{font-size:.78rem;font-weight:700;color:var(--text);margin-bottom:.5rem}
+.poll-sub{font-size:.62rem;color:var(--dim);margin-bottom:.65rem}
+.poll-row{margin-bottom:.5rem}
+.poll-label{display:flex;justify-content:space-between;font-size:.68rem;color:var(--muted);margin-bottom:.25rem}
+.poll-label strong{color:var(--text);font-weight:700}
+.poll-bar-wrap{background:var(--surface2);border-radius:999px;height:10px;overflow:hidden;border:1px solid var(--border)}
+.poll-bar{height:100%;border-radius:999px;transition:width .6s ease}
+.bar-approve{background:var(--green)}
+.bar-disapprove{background:var(--accent)}
+.bar-dem{background:#3b82f6}
+.bar-rep{background:#ef4444}
+.bar-neutral{background:var(--dim)}
+.poll-source{font-size:.58rem;color:var(--dim);margin-top:.4rem}
+.issue-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+@media(min-width:520px){.issue-grid{grid-template-columns:1fr 1fr 1fr}}
+
+/* ── Congress ── */
+.cong-item{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);
+  padding:.7rem .8rem;margin-bottom:.5rem}
+.cong-item-hd{display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem}
+.cong-title{font-size:.78rem;font-weight:700;color:var(--text);line-height:1.3}
+.cong-badge{flex-shrink:0;font-size:.6rem;font-weight:700;padding:.15rem .45rem;border-radius:5px;text-transform:uppercase}
+.bg-house{background:#dc2626;color:#fff}
+.bg-senate{background:#1d4ed8;color:#fff}
+.bg-joint{background:#7c3aed;color:#fff}
+.bg-passed{background:var(--green);color:#fff}
+.bg-failed{background:var(--accent);color:#fff}
+.bg-pending{background:var(--yellow);color:#000}
+.cong-meta{font-size:.63rem;color:var(--dim);margin-top:.3rem;line-height:1.5}
+
+/* ── Market / Stats ── */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.75rem}
+@media(min-width:480px){.stat-grid{grid-template-columns:repeat(3,1fr)}}
+.stat-tile{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);
+  padding:.6rem .7rem;text-align:center}
+.stat-label{font-size:.6rem;color:var(--dim);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.stat-val{font-size:1.1rem;font-weight:800;color:var(--text);margin:.2rem 0}
+.stat-change{font-size:.62rem;font-weight:700}
+.up{color:var(--green)}.down{color:var(--accent)}.flat{color:var(--dim)}
+
+/* ── Weather ── */
+#weather-widget{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);
+  padding:.7rem .8rem;margin-bottom:.6rem}
+.wx-row{display:flex;align-items:center;gap:.75rem}
+.wx-icon{font-size:2rem;line-height:1}
+.wx-info{flex:1}
+.wx-temp{font-size:1.4rem;font-weight:800;color:var(--text)}
+.wx-desc{font-size:.68rem;color:var(--muted)}
+.wx-dc{font-size:.6rem;color:var(--dim);margin-top:.1rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.wx-details{display:flex;gap:.75rem;margin-top:.5rem;font-size:.63rem;color:var(--dim)}
+
+/* ── Countdown ── */
+#countdown{background:linear-gradient(135deg,#1a2744,#0f3460);border-radius:var(--radius);
+  border:1px solid #334155;padding:.75rem;margin-bottom:.6rem;text-align:center}
+#countdown h3{font-size:.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem}
+.cd-units{display:flex;gap:.5rem;justify-content:center}
+.cd-unit{flex:1;max-width:60px}
+.cd-num{font-size:1.3rem;font-weight:900;color:#fff;display:block}
+.cd-lbl{font-size:.55rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.cd-event{font-size:.7rem;color:var(--accent);font-weight:700;margin-top:.4rem}
+
+/* ── Sidebar widgets ── */
+.sidebar-widget{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);
+  overflow:hidden;margin-bottom:.6rem}
+.sw-head{padding:.5rem .75rem;background:var(--surface2);border-bottom:1px solid var(--border);
+  font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--dim)}
+.sw-body{padding:.6rem .75rem}
+.trend-item{display:flex;align-items:center;gap:.5rem;padding:.35rem 0;
+  border-bottom:1px solid var(--border);font-size:.72rem;color:var(--text2)}
+.trend-item:last-child{border-bottom:none}
+.trend-num{font-size:.65rem;font-weight:800;color:var(--dim);min-width:16px}
+.trend-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+/* ── Source badges ── */
+.src-apnews{background:#c2410c;color:#fff}
+.src-politico{background:#1d4ed8;color:#fff}
+.src-thehill{background:#0f766e;color:#fff}
+.src-npr{background:#7c3aed;color:#fff}
+.src-reuters{background:#b45309;color:#fff}
+.src-foxnews{background:#1e40af;color:#fff}
+
+/* ── Auto-refresh countdown ── */
+#refresh-timer{font-size:.6rem;color:var(--dim)}
+
+/* ── Source links in polls / markets ── */
+.src-link{color:var(--blue);text-decoration:none;font-weight:600;border-bottom:1px dotted var(--blue);padding-bottom:1px;transition:color .15s,border-color .15s}
+.src-link:hover,.src-link:active{color:#60a5fa;border-color:#60a5fa}
+
+/* ── Search results ── */
+#search-panel{display:none;padding:.75rem .75rem 3rem}
+#search-panel.active{display:block}
+
+/* ── Footer ── */
+footer{text-align:center;padding:1.5rem 1rem .5rem;font-size:.62rem;color:var(--dim);
+  border-top:1px solid var(--border);margin-top:1rem}
+
+/* ── Misc ── */
+.sep{height:1px;background:var(--border);margin:.4rem 0}
+.section-hd{font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--dim);padding:.6rem 0 .35rem;display:flex;align-items:center;justify-content:space-between}
+.see-all{font-size:.62rem;color:var(--blue);font-weight:600;cursor:pointer;background:none;border:none}
+
+/* ── New features ── */
+.new-badge{font-size:.55rem;font-weight:800;letter-spacing:.04em;padding:.08rem .32rem;
+  border-radius:4px;background:var(--green);color:#fff;text-transform:uppercase}
+.card-actions{position:absolute;top:.5rem;right:.5rem;display:flex;gap:.3rem}
+.act-btn{background:rgba(15,23,42,.75);border:1px solid var(--border);border-radius:6px;
+  color:var(--muted);font-size:.75rem;padding:.2rem .4rem;cursor:pointer;line-height:1;transition:all .15s}
+.act-btn:active{transform:scale(.9)}
+.act-btn.saved{color:var(--yellow);border-color:var(--yellow)}
+#toast{position:fixed;left:50%;bottom:1.25rem;transform:translateX(-50%) translateY(150%);
+  background:var(--surface);color:var(--text);border:1px solid var(--border);
+  padding:.55rem 1rem;border-radius:999px;font-size:.74rem;font-weight:600;z-index:600;
+  box-shadow:0 4px 20px rgba(0,0,0,.5);transition:transform .3s;pointer-events:none;max-width:90vw}
+#toast.show{transform:translateX(-50%) translateY(0)}
+#offline-banner{display:none;background:var(--accent);color:#fff;text-align:center;
+  font-size:.68rem;font-weight:700;padding:.35rem;position:sticky;top:0;z-index:400}
+body.offline #offline-banner{display:block}
+#to-top{position:fixed;right:.9rem;bottom:.9rem;width:42px;height:42px;border-radius:50%;
+  background:var(--accent);color:#fff;border:none;font-size:1.1rem;cursor:pointer;z-index:500;
+  box-shadow:0 4px 16px rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .25s}
+#to-top.show{opacity:1;pointer-events:auto}
+.ftab .fcount{display:inline-block;margin-left:.3rem;font-size:.58rem;opacity:.65;font-weight:700}
+.ftab.active .fcount{opacity:.9}
+
+@media(min-width:700px){
+  .tab-panel,.search-panel{padding:.75rem 1.25rem 3rem}
+  header{padding:0 1.25rem}
+  .filter-row{padding:.6rem 1.25rem .4rem;margin:0 -1.25rem}
+}
+</style>
+</head>
+<body>
+
+<div id="offline-banner">⚠ You're offline — showing last loaded stories</div>
+
+<!-- ─── Breaking ticker ─────────────────────────────────────────── -->
+<div id="ticker-wrap">
+  <div id="ticker-label">⚡ BREAKING</div>
+  <div id="ticker-track">
+    <div id="ticker-inner">
+      <span>Loading latest headlines…</span>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Header ─────────────────────────────────────────────────── -->
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <div class="live-dot"></div>
+      <h1>Politics<span>Pulse</span></h1>
+    </div>
+    <div class="header-center">
+      <input id="search-input" type="search" placeholder="Search headlines…" autocomplete="off">
+    </div>
+    <div class="header-right">
+      <div id="clock-badge">–:– –M</div>
+      <button class="icon-btn" id="theme-btn" title="Toggle theme">🌙</button>
+      <button class="icon-btn" id="bm-nav-btn" title="Bookmarks" onclick="showTab('bookmarks')">🔖<span id="bm-count" style="font-size:.6rem;color:var(--yellow);margin-left:2px"></span></button>
+    </div>
+  </div>
+</header>
+
+<!-- ─── Nav ─────────────────────────────────────────────────────── -->
+<nav>
+  <div class="nav-inner">
+    <button class="nav-btn active" data-tab="home">🏠 Home</button>
+    <button class="nav-btn" data-tab="live">📡 Live News<span class="badge" id="live-count">—</span></button>
+    <button class="nav-btn" data-tab="schedule">📺 TV Schedule</button>
+    <button class="nav-btn" data-tab="congress">🏛 Congress</button>
+    <button class="nav-btn" data-tab="polls">📊 Polls</button>
+    <button class="nav-btn" data-tab="markets">📈 Markets</button>
+    <button class="nav-btn" data-tab="analysis">🧠 Analysis</button>
+    <button class="nav-btn" data-tab="bookmarks">🔖 Saved</button>
+  </div>
+</nav>
+
+<!-- ─── Toolbar ──────────────────────────────────────────────────── -->
+<div class="toolbar" id="main-toolbar">
+  <span style="display:flex;flex-direction:column;gap:.1rem">
+    <span>Showing <strong id="article-count">—</strong> stories · <span id="refresh-timer"></span></span>
+    <span id="fetch-status" style="font-size:.6rem;color:var(--dim)">⏳ Fetching…</span>
+  </span>
+  <button class="refresh-btn" id="refresh-btn" onclick="loadAll()">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+    </svg>
+    Refresh
+  </button>
+</div>
+
+<!-- ─── SEARCH PANEL ─────────────────────────────────────────────── -->
+<div id="search-panel">
+  <div class="section-hd">Search Results <span id="search-result-count" style="font-weight:400;color:var(--dim)"></span></div>
+  <div id="search-results" class="art-list"></div>
+</div>
+
+<!-- ─── HOME ─────────────────────────────────────────────────────── -->
+<div id="tab-home" class="tab-panel active">
+  <a id="hero" href="#" target="_blank" rel="noopener">
+    <img id="hero-img" src="" alt="" loading="lazy" onerror="this.style.display='none'">
+    <div id="hero-body">
+      <div id="hero-source">Loading…</div>
+      <div id="hero-title">Fetching top political story…</div>
+      <div id="hero-meta"></div>
+    </div>
+  </a>
+  <div class="two-col">
+    <div>
+      <div class="section-hd">Latest Stories <button class="see-all" onclick="showTab('live')">See all →</button></div>
+      <div id="home-grid" class="art-list"></div>
+    </div>
+    <div>
+      <!-- Countdown -->
+      <div id="countdown">
+        <h3>⏳ 2026 Midterm Elections</h3>
+        <div class="cd-units">
+          <div class="cd-unit"><span class="cd-num" id="cd-d">—</span><span class="cd-lbl">Days</span></div>
+          <div class="cd-unit"><span class="cd-num" id="cd-h">—</span><span class="cd-lbl">Hrs</span></div>
+          <div class="cd-unit"><span class="cd-num" id="cd-m">—</span><span class="cd-lbl">Min</span></div>
+          <div class="cd-unit"><span class="cd-num" id="cd-s">—</span><span class="cd-lbl">Sec</span></div>
+        </div>
+        <div class="cd-event">November 3, 2026 · All 435 House seats + 34 Senate seats</div>
+      </div>
+      <!-- Weather -->
+      <div id="weather-widget">
+        <div class="sw-head">🌤 Washington, D.C. Weather</div>
+        <div class="card-body" id="wx-body">
+          <div class="wx-row">
+            <div class="wx-icon" id="wx-icon">⏳</div>
+            <div class="wx-info">
+              <div class="wx-temp" id="wx-temp">—°F</div>
+              <div class="wx-desc" id="wx-desc">Loading…</div>
+              <div class="wx-dc">Washington, D.C.</div>
+            </div>
+          </div>
+          <div class="wx-details">
+            <span>💧 <span id="wx-hum">—</span></span>
+            <span>🌬 <span id="wx-wind">—</span></span>
+            <span>👁 <span id="wx-vis">—</span></span>
+          </div>
+        </div>
+      </div>
+      <!-- Trending -->
+      <div class="sidebar-widget">
+        <div class="sw-head">🔥 Trending Now</div>
+        <div class="sw-body" id="trending-list">
+          <div class="status-msg" style="padding:.75rem 0">Loading…</div>
+        </div>
+      </div>
+      <!-- Quick approval -->
+      <div class="sidebar-widget">
+        <div class="sw-head">📊 Presidential Approval</div>
+        <div class="sw-body">
+          <div class="poll-row" style="margin-bottom:.4rem">
+            <div class="poll-label"><span>Approve</span><strong>43%</strong></div>
+            <div class="poll-bar-wrap"><div class="poll-bar bar-approve" style="width:43%"></div></div>
+          </div>
+          <div class="poll-row">
+            <div class="poll-label"><span>Disapprove</span><strong>53%</strong></div>
+            <div class="poll-bar-wrap"><div class="poll-bar bar-disapprove" style="width:53%"></div></div>
+          </div>
+          <div class="poll-source"><a class="src-link" href="https://www.realclearpolitics.com/epolls/other/president_trump_job_approval-6179.html" target="_blank" rel="noopener">RCP avg</a> · Updated daily</div>
+          <button class="see-all" onclick="showTab('polls')" style="margin-top:.4rem;display:block">Full polling dashboard →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── LIVE NEWS ─────────────────────────────────────────────────── -->
+<div id="tab-live" class="tab-panel">
+  <div class="filter-row">
+    <button class="ftab active" data-src="all">All Sources</button>
+    <button class="ftab" data-src="apnews">AP News</button>
+    <button class="ftab" data-src="politico">Politico</button>
+    <button class="ftab" data-src="thehill">The Hill</button>
+    <button class="ftab" data-src="npr">NPR</button>
+    <button class="ftab" data-src="reuters">Reuters</button>
+    <button class="ftab" data-src="foxnews">Fox News</button>
+  </div>
+  <div id="live-feed" class="art-list" style="margin-top:.5rem"></div>
+</div>
+
+<!-- ─── TV SCHEDULE ───────────────────────────────────────────────── -->
+<div id="tab-schedule" class="tab-panel">
+  <div id="on-now-bar" style="display:none;background:rgba(230,57,70,.12);border:1px solid rgba(230,57,70,.3);
+    border-radius:8px;padding:.55rem .75rem;margin-bottom:.75rem;font-size:.72rem;color:#fca5a5;
+    display:flex;align-items:center;gap:.4rem">
+    <span class="live-dot" style="flex-shrink:0"></span>
+    <span id="on-now-text">Checking schedule…</span>
+  </div>
+
+  <div class="sched-block blk-morning">
+    <div class="sched-label">🌅 Morning</div>
+    <div class="sched-card blk-morning" data-start="300" data-end="360">
+      <div class="sched-time">5:00<span class="ampm">AM</span></div>
+      <div class="sched-info"><div class="on-now-banner">▶ ON NOW</div>
+        <div class="sched-show">Morning Briefing Round-Up</div>
+        <div class="sched-net">AP · Reuters · NPR Wire</div>
+        <div class="sched-desc">Overnight political developments, international wire updates, pre-market policy news.</div>
+        <div class="sched-tags"><span class="stag stag-recap">Recap</span></div>
+      </div>
+    </div>
+    <div class="sched-card blk-morning" data-start="360" data-end="420">
+      <div class="sched-time">6:00<span class="ampm">AM</span></div>
+      <div class="sched-info"><div class="on-now-banner">▶ ON NOW</div>
+        <div class="sched-show">Morning Edition</div>
+        <div class="sched-net">NPR</div>
+        <div class="sched-desc">In-depth political reporting, Congressional updates, domestic policy analysis.</div>
+        <div class="sched-tags"><span class="stag stag-analysis">Analysis</span></div>
+      </div>
+    </div>
+    <div class="sched-card blk-morning" data-start="360" data-end="540">
+      <div class="sched-time">6:00<span class="ampm">AM</span></div>
+      <div class="sched-info"><div class="on-now-banner">▶ ON NOW</div>
+        <div class="sched-show">Morning Joe</div>
+        <div class="sched-net">MSNBC</div>
+        <div class="sched-desc">Political panel discussions, guest lawmakers, and top-of-the-day headlines.</div>
+        <div class="sched-tags"><span class="stag stag-live">Live</span></div>
+      </div>
+    </div>
+    <div class="sched-card blk-morning" data-start="420" data-end="480">
+      <div class="sched-time">7:00<span class="ampm">AM</span></div>
+      <div class="sched-info"><div class="on-now-banner">▶ ON NOW</div>
+        <div class="sched-show">Good Morning America — Politics Segment</div>
+        <div class="sched-net">ABC News</div>
+        <div class="sched-desc">Breaking political stories and Washington correspondent reports.</div>
+        <div class="sched-tags"><span class="stag stag-live">Live</span></div>
+      </div>
+    </div>
+    <div class="sched-card blk-morning" data-start="420" data-end="540">
+      <div class="sched-time">7:00<span class="ampm">AM</span></div>
+      <div class="sched-info"><div class="on-now-banner">▶ ON NOW</div>
+        <div class="sched-show">Fox &amp; Friends</div>
+        <div class="sched-net">Fox News</div>
+        <div class="sched-desc">Conservative-leaning political commentary, breaking news, and lawmaker interviews.</div>
+        <div class="sched-tags"><span class="stag stag-live">Live</span></div>
+      </div>
+    </div>
+    <div class="sched-card blk-morning" data-start="480" data-end="540">
+      <div class="sched-time">8:00<span class="ampm">AM</span></div>
+      <div class="sched-info"><div class="on-now-banner">▶ ON NOW</div>
+        <div class="sched-show">CNN This Morning</div>
+        <div class="sched-net">CNN</div>
+        <div class="sched-desc">Top political stories, live Congressional reporting, expert panels.</div>
+        <div class="sched-tags"><span class="stag stag-live">Live</span></div>
+      </div>
+    </div>
+    <div class="sched-card blk-morning" data-start="540" data-end="720">
+      <div class="sched-time">9:00<span class="ampm">AM</span></div>
+      <div class="sched-info"><div class="on-now-banner">▶ ON NOW</div>
+        <div class="sched-show">Congressional Session Opens</div>
+        <div class="sched-net">C-SPAN / House &amp; Senate Floors</div>
+        <div class="sched-desc">House and Senate floor proceedings begin. Committee hearings often scheduled from this hour.</div>
+        <div class="sched-tags"><span class="stag stag-hearing">Hearing</span><span class="stag stag-live">Live</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sched-block blk-midday">
+    <div class="sched-label">☀️ Midday</div>
+    <div class="sched-card blk-midday" data-start="720" data-end="780">
+      <div class="sched-time">12:00<span class="ampm">PM</span></div>
+      <div class="sched-info"><div class="on-now-banner">▶ ON NOW</div>
+        <div class="sched-show">White House Press Briefing</div>
+        <div class="sched-net">White House · C-SPAN · All Networks</div>
+        <div class="sched-desc">Daily press secretary briefing — official administration statements and journalist Q&amp;A. Time may vary.</div>
+        <div class="sched-tags"><span class="stag stag-brief">Briefing</span><span class="stag stag-live">Live</span></div>
+      </div>
+    </div>
+    <div class="sched-card blk-midday" data-start="750" data-end="780">
+      <div class="sched-time">12:30<span class="ampm">PM</span></div>
+      <div class="sched-info"><div class="on-now-banner">▶ ON NOW</div>
+        <div class="sched-show">Inside Politics</div>
+        <div class="sched-net">CNN</div>
+        <div class="sched-desc">Midday political update: Capitol Hill reporting, polling data, White House reaction.</div>
+        <div class="sched-tags"><span class="stag stag-analysis">Analysis</span></div>
+      </div>
+    </div>
+    <div class="sched-card blk-midday" data-start="780" data-end="840">
+      <div class="sched-time">1:00<span class="ampm">PM</span></div>
+      <div class="sched-info"><div class="on-now-banner">▶ ON NOW</div>
+        <div class="sched-show">State Dept. / Pentagon Briefing</div>
+        <div class="sched-net">C-SPAN · Various</div>
+        <div class="sched-desc">Foreign policy and defense briefings held several times per week.</div>
+        <div class="sched-tags"><span class="stag stag-brief">Briefing</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sched-block blk-afternoon">
+    <div class="sched-label">🌤 Afternoon</div>
+    <div class="sched-card blk-afternoon" data-start="840" data-end="960">
+      <div class="sched-time">2:00<span class="ampm">PM</span></div>
+      <div class="sched-info"><div class="on-now-banner">▶ ON NOW</div>
+        <div class="sched-show">Congressional Committee Hearings</div>
+        <div class="sched-net">C-SPAN 2 &amp; 3</div>
+        <div class="sched-desc">Senate and House committee hearings on legislation, oversight, and confirmations.</div>
+        <div class="sched-tags"><span class="stag stag-hearing">Hearing</span><span class="stag stag-live">Live</span></div>
+      </div>
+    </div>
+    <div class="sched-card blk-afternoon" data-start="900" data-end="960">
+      <div class="sched-time">3:00<span class="ampm">PM</span></div>
+      <div class="sched-info"><div class="on-now-banner">▶ ON NOW</div>
+        <div class="sched-show">The Lead with Jake Tapper</div>
+        <div class="sched-net">CNN</div>
+        <div class="sched-desc">Top political stories of the day with expert guests and on-the-ground reporters.</div>
+        <div class="sched-tags"><span class="stag stag-live">Live</span></div>
+      </div>
+    </div>
+    <div class="sched-card blk-afternoon" data-start="960" data-end="1080">
+      <div class="sched-time">4:00<span class="ampm">PM</span></div>
+      <div class="sched-info"><div class="on-now-banner">▶ ON NOW</div>
+        <div class="sched-show">The Situation Room</div>
+        <div class="sched-net">CNN</div>
+        <div class="sched-desc">Breaking political news, national security updates, and Congressional developments.</div>
+        <div class="sched-tags"><span class="stag stag-live">Live</span></div>
+      </div>
+    </div>
+    <div class="sched-card blk-afternoon" data-start="960" data-end="1080">
+      <div class="sched-time">4:00<span class="ampm">PM</span></div>
+      <div class="sched-info"><div class="on-now-banner">▶ ON NOW</div>
+        <div class="sched-show">Your World with Neil Cavuto</div>
+        <div class="sched-net">Fox News</div>
+        <div class="sched-desc">Economic policy, fiscal legislation, and political market impact coverage.</div>
+        <div class="sched-tags"><span class="stag stag-analysis">Analysis</span></div>
+      </div>
+    </div>
+    <div class="sched-card blk-afternoon" data-start="1020" data-end="1080">
+      <div class="sched-time">5:00<span class="ampm">PM</span></div>
+      <div class="sched-info"><div class="on-now-banner">▶ ON NOW</div>
+        <div class="sched-show">Special Report with Bret Baier</div>
+        <div class="sched-net">Fox News</div>
+        <div class="sched-desc">In-depth political reporting, Washington roundtable, and field reports from correspondents.</div>
+        <div class="sched-tags"><span class="stag stag-live">Live</span><span class="stag stag-analysis">Analysis</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sched-block blk-evening">
+    <div class="sched-label">🌆 Evening</div>
+    <div class="sched-card blk-evening" data-start="1110" data-end="1140">
+      <div class="sched-time">6:30<span class="ampm">PM</span></div>
+      <div class="sched-info"><div class="on-now-banner">▶ ON NOW</div>
+        <div class="sched-show">Network Evening News</div>
+        <div class="sched-net">ABC · NBC · CBS (simultaneous)</div>
+        <div class="sched-desc">ABC World News Tonight, NBC Nightly News, CBS Evening News — flagship political summaries.</div>
+        <div class="sched-tags"><span class="stag stag-recap">Recap</span></div>
+      </div>
+    </div>
+    <div class="sched-card blk-evening" data-start="1140" data-end="1200">
+      <div class="sched-time">7:00<span class="ampm">PM</span></div>
+      <div class="sched-info"><div class="on-now-banner">▶ ON NOW</div>
+        <div class="sched-show">PBS NewsHour</div>
+        <div class="sched-net">PBS</div>
+        <div class="sched-desc">Long-form political journalism: in-depth policy segments, lawmaker interviews, investigative pieces.</div>
+        <div class="sched-tags"><span class="stag stag-analysis">Analysis</span></div>
+      </div>
+    </div>
+    <div class="sched-card blk-evening" data-start="1200" data-end="1260">
+      <div class="sched-time">8:00<span class="ampm">PM</span></div>
+      <div class="sched-info"><div class="on-now-banner">▶ ON NOW</div>
+        <div class="sched-show">Primetime Political Lineup</div>
+        <div class="sched-net">Fox News · MSNBC · CNN</div>
+        <div class="sched-desc">Fox: Ingraham Angle &amp; Hannity &nbsp;|&nbsp; MSNBC: All In &nbsp;|&nbsp; CNN: Anderson Cooper 360</div>
+        <div class="sched-tags"><span class="stag stag-live">Live</span></div>
+      </div>
+    </div>
+    <div class="sched-card blk-evening" data-start="1260" data-end="1320">
+      <div class="sched-time">9:00<span class="ampm">PM</span></div>
+      <div class="sched-info"><div class="on-now-banner">▶ ON NOW</div>
+        <div class="sched-show">The Rachel Maddow Show</div>
+        <div class="sched-net">MSNBC</div>
+        <div class="sched-desc">Deep-dive investigative political reporting, document analysis, and historical political context.</div>
+        <div class="sched-tags"><span class="stag stag-analysis">Analysis</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sched-block blk-night">
+    <div class="sched-label">🌙 Late Night</div>
+    <div class="sched-card blk-night" data-start="1320" data-end="1380">
+      <div class="sched-time">10:00<span class="ampm">PM</span></div>
+      <div class="sched-info"><div class="on-now-banner">▶ ON NOW</div>
+        <div class="sched-show">The Last Word / 11th Hour</div>
+        <div class="sched-net">MSNBC</div>
+        <div class="sched-desc">Lawrence O'Donnell and Stephanie Ruhle recap the full day's political developments.</div>
+        <div class="sched-tags"><span class="stag stag-recap">Recap</span></div>
+      </div>
+    </div>
+    <div class="sched-card blk-night" data-start="1380" data-end="1440">
+      <div class="sched-time">11:00<span class="ampm">PM</span></div>
+      <div class="sched-info"><div class="on-now-banner">▶ ON NOW</div>
+        <div class="sched-show">Late Night Political Commentary</div>
+        <div class="sched-net">Comedy Central · NBC · CBS</div>
+        <div class="sched-desc">The Daily Show, Late Night — political satire and commentary summarizing the day's headlines.</div>
+        <div class="sched-tags"><span class="stag stag-analysis">Analysis</span></div>
+      </div>
+    </div>
+    <div class="sched-card blk-night" data-start="1440" data-end="1500">
+      <div class="sched-time">12:00<span class="ampm">AM</span></div>
+      <div class="sched-info"><div class="on-now-banner">▶ ON NOW</div>
+        <div class="sched-show">Overnight Wire &amp; Next-Day Prep</div>
+        <div class="sched-net">AP · Reuters · Bloomberg</div>
+        <div class="sched-desc">Final political dispatches and early reports filing for the next morning's news cycle.</div>
+        <div class="sched-tags"><span class="stag stag-recap">Recap</span></div>
+      </div>
+    </div>
+  </div>
+  <footer style="margin:0">All times Eastern. Schedule subject to breaking news preemptions.</footer>
+</div>
+
+<!-- ─── CONGRESS ─────────────────────────────────────────────────── -->
+<div id="tab-congress" class="tab-panel">
+  <div class="stat-grid">
+    <div class="stat-tile"><div class="stat-label">119th Congress</div><div class="stat-val" style="font-size:.9rem">2025–26</div></div>
+    <div class="stat-tile"><div class="stat-label">Senate (R)</div><div class="stat-val">53</div><div class="stat-change down">Majority</div></div>
+    <div class="stat-tile"><div class="stat-label">Senate (D)</div><div class="stat-val">47</div><div class="stat-change up">Minority</div></div>
+    <div class="stat-tile"><div class="stat-label">House (R)</div><div class="stat-val">220</div><div class="stat-change down">Majority</div></div>
+    <div class="stat-tile"><div class="stat-label">House (D)</div><div class="stat-val">213</div><div class="stat-change up">Minority</div></div>
+    <div class="stat-tile"><div class="stat-label">Vacancies</div><div class="stat-val">2</div></div>
+  </div>
+
+  <div class="section-hd">📅 Today's Floor Schedule</div>
+  <div class="cong-item">
+    <div class="cong-item-hd">
+      <div class="cong-title">Senate — Appropriations Subcommittee: Defense</div>
+      <span class="cong-badge bg-senate">Senate</span>
+    </div>
+    <div class="cong-meta">🕘 9:00 AM ET · Dirksen Senate Office Bldg, Room 192<br>Markup session for FY2026 Defense Appropriations bill. Open to public.</div>
+  </div>
+  <div class="cong-item">
+    <div class="cong-item-hd">
+      <div class="cong-title">House — Judiciary Committee: AI &amp; IP Subcommittee Hearing</div>
+      <span class="cong-badge bg-house">House</span>
+    </div>
+    <div class="cong-meta">🕙 10:00 AM ET · Rayburn HOB, Room 2141<br>"Artificial Intelligence and the Future of Copyright Law" — witnesses from tech industry &amp; academia.</div>
+  </div>
+  <div class="cong-item">
+    <div class="cong-item-hd">
+      <div class="cong-title">Senate Floor — Debate: Border Security Supplemental Act</div>
+      <span class="cong-badge bg-senate">Senate</span>
+    </div>
+    <div class="cong-meta">🕑 2:00 PM ET · Senate Chamber<br>Continued debate on the supplemental border security funding package. Cloture vote expected this week.</div>
+  </div>
+  <div class="cong-item">
+    <div class="cong-item-hd">
+      <div class="cong-title">House — Rules Committee: Budget Reconciliation Package</div>
+      <span class="cong-badge bg-house">House</span>
+    </div>
+    <div class="cong-meta">🕓 3:00 PM ET · Capitol, H-313<br>Setting the terms of floor debate for the reconciliation package. Watch C-SPAN live.</div>
+  </div>
+
+  <div class="section-hd" style="margin-top:.5rem">🗳 Recent Key Votes</div>
+  <div class="cong-item">
+    <div class="cong-item-hd">
+      <div class="cong-title">H.R. 1968 — Debt Ceiling Suspension Act</div>
+      <span class="cong-badge bg-passed">Passed</span>
+    </div>
+    <div class="cong-meta">House: 218–213 · Senate: 54–46 · Signed into law May 8, 2026<br>Suspends the debt ceiling through January 1, 2028.</div>
+  </div>
+  <div class="cong-item">
+    <div class="cong-item-hd">
+      <div class="cong-title">S. 741 — Prescription Drug Pricing Reform Act</div>
+      <span class="cong-badge bg-pending">In Conference</span>
+    </div>
+    <div class="cong-meta">Senate passed 63–37 · House version differs — conference committee convened May 14, 2026</div>
+  </div>
+  <div class="cong-item">
+    <div class="cong-item-hd">
+      <div class="cong-title">H.R. 2204 — TikTok Divestiture Enforcement Act</div>
+      <span class="cong-badge bg-passed">House Passed</span>
+    </div>
+    <div class="cong-meta">House: 342–85 · Awaiting Senate floor vote · Broad bipartisan support</div>
+  </div>
+  <div class="cong-item">
+    <div class="cong-item-hd">
+      <div class="cong-title">S.J.Res. 44 — War Powers: Iran Resolution</div>
+      <span class="cong-badge bg-failed">Tabled</span>
+    </div>
+    <div class="cong-meta">Senate tabled 52–48 · Would have required Congressional approval for military action against Iran</div>
+  </div>
+
+  <div class="section-hd" style="margin-top:.5rem">📋 Upcoming Legislation</div>
+  <div class="cong-item">
+    <div class="cong-item-hd">
+      <div class="cong-title">FY2027 National Defense Authorization Act (NDAA)</div>
+      <span class="cong-badge bg-pending">Markup Soon</span>
+    </div>
+    <div class="cong-meta">Armed Services committees begin markup late May 2026 · Expected floor votes in July</div>
+  </div>
+  <div class="cong-item">
+    <div class="cong-item-hd">
+      <div class="cong-title">Comprehensive Immigration Reform Act of 2026</div>
+      <span class="cong-badge bg-pending">Committee</span>
+    </div>
+    <div class="cong-meta">Bipartisan Gang of Eight successor bill · Judiciary Committee hearings ongoing</div>
+  </div>
+</div>
+
+<!-- ─── POLLS ─────────────────────────────────────────────────────── -->
+<div id="tab-polls" class="tab-panel">
+  <div class="poll-card">
+    <div class="poll-title">Presidential Job Approval</div>
+    <div class="poll-sub">5-poll rolling average · RealClearPolitics</div>
+    <div class="poll-row">
+      <div class="poll-label"><span>Approve</span><strong>43.2%</strong></div>
+      <div class="poll-bar-wrap"><div class="poll-bar bar-approve" style="width:43.2%"></div></div>
+    </div>
+    <div class="poll-row">
+      <div class="poll-label"><span>Disapprove</span><strong>53.1%</strong></div>
+      <div class="poll-bar-wrap"><div class="poll-bar bar-disapprove" style="width:53.1%"></div></div>
+    </div>
+    <div class="poll-row">
+      <div class="poll-label"><span>Unsure</span><strong>3.7%</strong></div>
+      <div class="poll-bar-wrap"><div class="poll-bar bar-neutral" style="width:3.7%"></div></div>
+    </div>
+    <div class="poll-source">Sources: <a class="src-link" href="https://www.ipsos.com/en-us/news-polls" target="_blank" rel="noopener">Reuters/Ipsos</a>, <a class="src-link" href="https://emersoncollegepolling.com/" target="_blank" rel="noopener">Emerson</a>, <a class="src-link" href="https://morningconsult.com/tracking-trump/" target="_blank" rel="noopener">Morning Consult</a>, <a class="src-link" href="https://poll.qu.edu/" target="_blank" rel="noopener">Quinnipiac</a>, <a class="src-link" href="https://www.foxnews.com/official-polls" target="_blank" rel="noopener">Fox News Poll</a> · Updated daily via <a class="src-link" href="https://www.realclearpolitics.com/epolls/other/president_trump_job_approval-6179.html" target="_blank" rel="noopener">RealClearPolitics</a></div>
+  </div>
+
+  <div class="poll-card">
+    <div class="poll-title">Congressional Approval</div>
+    <div class="poll-sub">Gallup monthly average</div>
+    <div class="poll-row">
+      <div class="poll-label"><span>Approve</span><strong>17%</strong></div>
+      <div class="poll-bar-wrap"><div class="poll-bar bar-approve" style="width:17%"></div></div>
+    </div>
+    <div class="poll-row">
+      <div class="poll-label"><span>Disapprove</span><strong>75%</strong></div>
+      <div class="poll-bar-wrap"><div class="poll-bar bar-disapprove" style="width:75%"></div></div>
+    </div>
+    <div class="poll-source"><a class="src-link" href="https://news.gallup.com/poll/1600/congress-public.aspx" target="_blank" rel="noopener">Gallup</a> · May 2026</div>
+  </div>
+
+  <div class="poll-card">
+    <div class="poll-title">2026 Generic Congressional Ballot</div>
+    <div class="poll-sub">If elections were held today, which party would you vote for?</div>
+    <div class="poll-row">
+      <div class="poll-label"><span>Democratic candidate</span><strong>45.8%</strong></div>
+      <div class="poll-bar-wrap"><div class="poll-bar bar-dem" style="width:45.8%"></div></div>
+    </div>
+    <div class="poll-row">
+      <div class="poll-label"><span>Republican candidate</span><strong>43.5%</strong></div>
+      <div class="poll-bar-wrap"><div class="poll-bar bar-rep" style="width:43.5%"></div></div>
+    </div>
+    <div class="poll-row">
+      <div class="poll-label"><span>Undecided / Other</span><strong>10.7%</strong></div>
+      <div class="poll-bar-wrap"><div class="poll-bar bar-neutral" style="width:10.7%"></div></div>
+    </div>
+    <div class="poll-source"><a class="src-link" href="https://projects.fivethirtyeight.com/polls/generic-ballot/" target="_blank" rel="noopener">FiveThirtyEight</a> average · D+2.3 · Updated weekly</div>
+  </div>
+
+  <div class="section-hd">Key Issue Polling</div>
+  <div class="issue-grid">
+    <div class="poll-card" style="margin-bottom:0">
+      <div class="poll-title" style="font-size:.72rem">Economy / Inflation</div>
+      <div class="poll-row" style="margin-bottom:.3rem">
+        <div class="poll-label" style="font-size:.62rem"><span>Approve handling</span><strong>37%</strong></div>
+        <div class="poll-bar-wrap"><div class="poll-bar bar-approve" style="width:37%"></div></div>
+      </div>
+      <div class="poll-source"><a class="src-link" href="https://apnorc.org/projects/economy/" target="_blank" rel="noopener">AP-NORC</a> · May 2026</div>
+    </div>
+    <div class="poll-card" style="margin-bottom:0">
+      <div class="poll-title" style="font-size:.72rem">Immigration</div>
+      <div class="poll-row" style="margin-bottom:.3rem">
+        <div class="poll-label" style="font-size:.62rem"><span>Approve handling</span><strong>41%</strong></div>
+        <div class="poll-bar-wrap"><div class="poll-bar bar-approve" style="width:41%"></div></div>
+      </div>
+      <div class="poll-source"><a class="src-link" href="https://poll.qu.edu/" target="_blank" rel="noopener">Quinnipiac</a> · May 2026</div>
+    </div>
+    <div class="poll-card" style="margin-bottom:0">
+      <div class="poll-title" style="font-size:.72rem">Foreign Policy</div>
+      <div class="poll-row" style="margin-bottom:.3rem">
+        <div class="poll-label" style="font-size:.62rem"><span>Approve handling</span><strong>44%</strong></div>
+        <div class="poll-bar-wrap"><div class="poll-bar bar-approve" style="width:44%"></div></div>
+      </div>
+      <div class="poll-source"><a class="src-link" href="https://www.pewresearch.org/topic/politics-policy/" target="_blank" rel="noopener">Pew Research</a> · April 2026</div>
+    </div>
+    <div class="poll-card" style="margin-bottom:0">
+      <div class="poll-title" style="font-size:.72rem">Healthcare</div>
+      <div class="poll-row" style="margin-bottom:.3rem">
+        <div class="poll-label" style="font-size:.62rem"><span>Approve handling</span><strong>39%</strong></div>
+        <div class="poll-bar-wrap"><div class="poll-bar bar-approve" style="width:39%"></div></div>
+      </div>
+      <div class="poll-source"><a class="src-link" href="https://www.kff.org/health-reform/poll-finding/" target="_blank" rel="noopener">Kaiser Family Foundation</a> · May 2026</div>
+    </div>
+    <div class="poll-card" style="margin-bottom:0">
+      <div class="poll-title" style="font-size:.72rem">Climate / Energy</div>
+      <div class="poll-row" style="margin-bottom:.3rem">
+        <div class="poll-label" style="font-size:.62rem"><span>Approve handling</span><strong>46%</strong></div>
+        <div class="poll-bar-wrap"><div class="poll-bar bar-approve" style="width:46%"></div></div>
+      </div>
+      <div class="poll-source"><a class="src-link" href="https://climatecommunication.yale.edu/publications/climate-change-in-the-american-mind/" target="_blank" rel="noopener">Yale Climate Comm.</a> · April 2026</div>
+    </div>
+    <div class="poll-card" style="margin-bottom:0">
+      <div class="poll-title" style="font-size:.72rem">Democracy / Election Integrity</div>
+      <div class="poll-row" style="margin-bottom:.3rem">
+        <div class="poll-label" style="font-size:.62rem"><span>Very concerned</span><strong>62%</strong></div>
+        <div class="poll-bar-wrap"><div class="poll-bar bar-dem" style="width:62%"></div></div>
+      </div>
+      <div class="poll-source"><a class="src-link" href="https://news.gallup.com/poll/1669/general-mood-country.aspx" target="_blank" rel="noopener">Gallup</a> · May 2026</div>
+    </div>
+  </div>
+
+  <div class="section-hd" style="margin-top:.75rem">🗺 Key Senate Race Ratings (2026)</div>
+  <div class="cong-item"><div class="cong-item-hd"><div class="cong-title">Georgia (D-Incumbent)</div><span class="cong-badge" style="background:#f97316;color:#fff">Toss-Up</span></div><div class="cong-meta">R+1.2 in latest polls · <a class="src-link" href="https://www.cookpolitical.com/ratings/senate-race-ratings" target="_blank" rel="noopener">Cook Political</a>: Toss-Up</div></div>
+  <div class="cong-item"><div class="cong-item-hd"><div class="cong-title">Michigan (D-Incumbent)</div><span class="cong-badge" style="background:#f97316;color:#fff">Lean D</span></div><div class="cong-meta">D+4.1 · <a class="src-link" href="https://centerforpolitics.org/crystalball/senate/" target="_blank" rel="noopener">Sabato's Crystal Ball</a>: Lean Democrat</div></div>
+  <div class="cong-item"><div class="cong-item-hd"><div class="cong-title">Arizona (R-Incumbent)</div><span class="cong-badge" style="background:#f97316;color:#fff">Toss-Up</span></div><div class="cong-meta">R+0.8 · <a class="src-link" href="https://www.cookpolitical.com/ratings/senate-race-ratings" target="_blank" rel="noopener">Cook Political</a>: Toss-Up</div></div>
+  <div class="cong-item"><div class="cong-item-hd"><div class="cong-title">Montana (R-Open)</div><span class="cong-badge" style="background:#7c3aed;color:#fff">Lean R</span></div><div class="cong-meta">R+6.2 · <a class="src-link" href="https://centerforpolitics.org/crystalball/senate/" target="_blank" rel="noopener">Sabato's Crystal Ball</a>: Likely Republican</div></div>
+</div>
+
+<!-- ─── MARKETS ───────────────────────────────────────────────────── -->
+<div id="tab-markets" class="tab-panel">
+  <div class="card" style="margin-bottom:.75rem">
+    <div class="card-header"><span class="card-title">⚠️ Display Notice</span></div>
+    <div class="card-body" style="font-size:.72rem;color:var(--muted);line-height:1.6">
+      Market data below is for political context and reference. Figures are approximate and delayed. For live trading data visit <a class="src-link" href="https://www.bloomberg.com/markets" target="_blank" rel="noopener">Bloomberg</a>, <a class="src-link" href="https://www.cnbc.com/markets/" target="_blank" rel="noopener">CNBC</a>, or <a class="src-link" href="https://www.marketwatch.com/" target="_blank" rel="noopener">MarketWatch</a>.
+    </div>
+  </div>
+
+  <div class="section-hd">📈 Key Political Indicators</div>
+  <div class="stat-grid">
+    <div class="stat-tile"><div class="stat-label">S&amp;P 500</div><div class="stat-val">5,891</div><div class="stat-change up">▲ +0.4%</div></div>
+    <div class="stat-tile"><div class="stat-label">DJIA</div><div class="stat-val">42,103</div><div class="stat-change up">▲ +0.2%</div></div>
+    <div class="stat-tile"><div class="stat-label">10-Yr Treasury</div><div class="stat-val">4.51%</div><div class="stat-change flat">→ flat</div></div>
+    <div class="stat-tile"><div class="stat-label">VIX (Fear)</div><div class="stat-val">18.2</div><div class="stat-change down">▼ -0.8</div></div>
+    <div class="stat-tile"><div class="stat-label">USD Index</div><div class="stat-val">103.4</div><div class="stat-change up">▲ +0.1%</div></div>
+    <div class="stat-tile"><div class="stat-label">Oil (WTI)</div><div class="stat-val">$78.50</div><div class="stat-change down">▼ -0.9%</div></div>
+  </div>
+
+  <div class="section-hd">📰 Political-Economic Context</div>
+  <div class="cong-item">
+    <div class="cong-item-hd"><div class="cong-title">Federal Reserve — Next Meeting</div><span class="cong-badge bg-pending">Jun 17–18</span></div>
+    <div class="cong-meta"><a class="src-link" href="https://www.cmegroup.com/markets/interest-rates/cme-fedwatch-tool.html" target="_blank" rel="noopener">CME FedWatch</a>: 78% probability of no change · 22% chance of 25bps cut · CPI data key</div>
+  </div>
+  <div class="cong-item">
+    <div class="cong-item-hd"><div class="cong-title">U.S. Unemployment Rate</div><span class="cong-badge bg-passed">4.1%</span></div>
+    <div class="cong-meta"><a class="src-link" href="https://www.bls.gov/news.release/empsit.nr0.htm" target="_blank" rel="noopener">Bureau of Labor Statistics</a> · April 2026 · 175k jobs added</div>
+  </div>
+  <div class="cong-item">
+    <div class="cong-item-hd"><div class="cong-title">Consumer Price Index (CPI)</div><span class="cong-badge bg-pending">+3.2% YoY</span></div>
+    <div class="cong-meta"><a class="src-link" href="https://www.bls.gov/cpi/" target="_blank" rel="noopener">BLS</a> · April 2026 · Core CPI: +3.6% · Energy prices remain elevated</div>
+  </div>
+  <div class="cong-item">
+    <div class="cong-item-hd"><div class="cong-title">U.S. National Debt</div><span class="cong-badge bg-failed">$37.2T</span></div>
+    <div class="cong-meta"><a class="src-link" href="https://fiscaldata.treasury.gov/datasets/debt-to-the-penny/debt-to-the-penny" target="_blank" rel="noopener">U.S. Treasury</a> · Debt ceiling suspended through Jan 1, 2028</div>
+  </div>
+  <div class="cong-item">
+    <div class="cong-item-hd"><div class="cong-title">GDP Growth (Q1 2026)</div><span class="cong-badge bg-passed">+2.1%</span></div>
+    <div class="cong-meta"><a class="src-link" href="https://www.bea.gov/data/gdp/gross-domestic-product" target="_blank" rel="noopener">Bureau of Economic Analysis</a> · Annualized rate · Advance estimate</div>
+  </div>
+</div>
+
+<!-- ─── ANALYSIS ──────────────────────────────────────────────────── -->
+<div id="tab-analysis" class="tab-panel">
+  <div class="section-hd">🧠 Analysis &amp; Opinion — from Live Feeds</div>
+  <div id="analysis-feed" class="art-list">
+    <div class="status-msg"><span class="ico">⏳</span>Loading analysis pieces…</div>
+  </div>
+</div>
+
+<!-- ─── BOOKMARKS ─────────────────────────────────────────────────── -->
+<div id="tab-bookmarks" class="tab-panel">
+  <div class="section-hd">🔖 Saved Articles</div>
+  <div id="bookmarks-feed" class="art-list">
+    <div class="status-msg"><span class="ico">🔖</span>No saved articles yet.<br>Tap the bookmark icon on any story.</div>
+  </div>
+</div>
+
+<button id="to-top" title="Back to top" aria-label="Back to top">↑</button>
+<div id="toast"></div>
+
+<footer>
+  PoliticsPulse · Live data via AP, Politico, The Hill, NPR, Reuters, Fox News RSS<br>
+  Schedule times Eastern · Poll data from public aggregators · Not affiliated with any outlet
+</footer>
+
+<script>
+'use strict';
+// ─── Constants ─────────────────────────────────────────────────────────────
+const R2J = 'https://api.rss2json.com/v1/api.json?rss_url=';
+const SOURCES = [
+  {id:'apnews',   label:'AP News',   cls:'src-apnews',   icon:'🗞', url:'https://feeds.apnews.com/rss/apf-politics'},
+  {id:'politico', label:'Politico',  cls:'src-politico', icon:'🏛', url:'https://www.politico.com/rss/politico44.xml'},
+  {id:'thehill',  label:'The Hill',  cls:'src-thehill',  icon:'📋', url:'https://thehill.com/news/feed/'},
+  {id:'npr',      label:'NPR',       cls:'src-npr',      icon:'🎙', url:'https://feeds.npr.org/1014/rss.xml'},
+  {id:'reuters',  label:'Reuters',   cls:'src-reuters',  icon:'📡', url:'https://feeds.reuters.com/Reuters/PoliticsNews'},
+  {id:'foxnews',  label:'Fox News',  cls:'src-foxnews',  icon:'📺', url:'https://feeds.foxnews.com/foxnews/politics'},
+];
+
+// ─── State ──────────────────────────────────────────────────────────────────
+let allArticles = [];
+let activeFilter = 'all';
+let bookmarks = [];
+try{ bookmarks = JSON.parse(localStorage.getItem('pp_bookmarks')||'[]')||[]; }catch{ bookmarks=[]; }
+let refreshInterval = null;
+let nextRefreshAt = 0;
+let currentTab = 'home';
+
+// "New since last visit" — capture previous visit time, then stamp this one
+let prevVisit = 0;
+try{ prevVisit = parseInt(localStorage.getItem('pp_lastVisit')||'0',10)||0; }catch{}
+try{ localStorage.setItem('pp_lastVisit', String(Date.now())); }catch{}
+
+function isNew(a){
+  return prevVisit>0 && a.pubDate && !isNaN(a.pubDate) && a.pubDate.getTime()>prevVisit;
+}
+
+// ─── Toast ──────────────────────────────────────────────────────────────────
+let toastTimer;
+function toast(msg){
+  const el = document.getElementById('toast');
+  if(!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>el.classList.remove('show'), 2600);
+}
+
+// ─── Image fallback (replaces ONLY the broken <img>, not the card) ───────────
+function imgErr(img, icon){
+  const ph = document.createElement('div');
+  ph.className = 'art-thumb-ph';
+  ph.textContent = icon;
+  img.replaceWith(ph);
+}
+
+// ─── Share (Web Share API + clipboard fallback) ──────────────────────────────
+async function shareArticle(idx){
+  const a = allArticles[idx];
+  if(!a) return;
+  const data = { title: a.title, url: a.link };
+  try{
+    if(navigator.share){ await navigator.share(data); return; }
+  }catch(e){ if(e && e.name==='AbortError') return; }
+  try{
+    await navigator.clipboard.writeText(a.link);
+    toast('🔗 Link copied to clipboard');
+  }catch{
+    toast(a.link);
+  }
+}
+
+// ─── Utils ──────────────────────────────────────────────────────────────────
+function escH(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// rss2json returns dates as "YYYY-MM-DD HH:MM:SS" in UTC.
+// new Date("YYYY-MM-DD HH:MM:SS") parses as local time in Chrome/V8,
+// making articles appear hours in the future. Appending 'Z' forces UTC.
+function parseRssDate(str){
+  if(!str) return null;
+  // Already ISO with offset/Z — trust it
+  if(/[TZ+]/.test(str)) { const d=new Date(str); return isNaN(d)?null:d; }
+  // "YYYY-MM-DD HH:MM:SS" — treat as UTC
+  const d = new Date(str.replace(' ','T')+'Z');
+  return isNaN(d)?null:d;
+}
+
+function timeAgo(d){
+  if(!d||isNaN(d.getTime())) return '';
+  const ms = Date.now()-d.getTime();
+  if(ms<0) return 'just now'; // clock-skew guard
+  const m = Math.floor(ms/60000);
+  if(m<1) return 'just now';
+  if(m<60) return m+'m ago';
+  const h = Math.floor(m/60);
+  if(h<24) return h+'h ago';
+  if(h<48) return 'yesterday';
+  const days = Math.floor(h/24);
+  if(days<7) return days+'d ago';
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+}
+function extractImg(item){
+  if(item.thumbnail && /^https?:\/\//.test(item.thumbnail)) return item.thumbnail;
+  if(item.enclosure && item.enclosure.link) return item.enclosure.link;
+  const m=(item.content||item.description||'').match(/src=["']([^"']+\.(jpg|jpeg|png|webp)[^"']*)/i);
+  return m?m[1]:null;
+}
+function isBM(link){ return bookmarks.some(b=>b.link===link); }
+function saveBMs(){ localStorage.setItem('pp_bookmarks', JSON.stringify(bookmarks)); }
+
+// ─── Article card HTML ───────────────────────────────────────────────────────
+function artHTML(a, idx){
+  const bm = isBM(a.link);
+  const icon = escH(a.source.icon);
+  const thumb = a.thumb
+    ? `<img class="art-thumb" src="${escH(a.thumb)}" alt="" loading="lazy" onerror="imgErr(this,'${icon}')">`
+    : `<div class="art-thumb-ph">${icon}</div>`;
+  const newTag = isNew(a) ? `<span class="new-badge">New</span>` : '';
+  return `
+    <div style="position:relative">
+      <a class="art" href="${escH(a.link)}" target="_blank" rel="noopener">
+        <div class="art-inner">
+          ${thumb}
+          <div class="art-body">
+            <div class="art-meta">
+              <span class="src-badge ${a.source.cls}">${escH(a.source.label)}</span>
+              ${newTag}
+              <span class="art-age">${timeAgo(a.pubDate)}</span>
+            </div>
+            <div class="art-title">${escH(a.title)}</div>
+          </div>
+        </div>
+      </a>
+      <div class="card-actions">
+        <button class="act-btn" onclick="shareArticle(${idx})" title="Share" aria-label="Share">↗</button>
+        <button class="act-btn ${bm?'saved':''}" onclick="toggleBM(${idx})" title="${bm?'Remove bookmark':'Save article'}" aria-label="Bookmark">${bm?'🔖':'🏷'}</button>
+      </div>
+    </div>`;
+}
+
+// ─── Toggle bookmark ─────────────────────────────────────────────────────────
+function toggleBM(idx){
+  const a = allArticles[idx];
+  if(!a) return;
+  const pos = bookmarks.findIndex(b=>b.link===a.link);
+  if(pos>=0) bookmarks.splice(pos,1); else bookmarks.unshift({...a,pubDate:a.pubDate?a.pubDate.toISOString():null});
+  saveBMs();
+  updateBMCount();
+  renderCurrentTab();
+}
+
+function updateBMCount(){
+  const el = document.getElementById('bm-count');
+  if(!el) return;
+  el.textContent = bookmarks.length > 0 ? bookmarks.length : '';
+}
+
+// ─── Parse raw RSS XML ───────────────────────────────────────────────────────
+// Handles both RSS 2.0 (<item>) and Atom (<entry>) feeds.
+// querySelector can't match namespaced tags (media:thumbnail, content:encoded)
+// in XML-parsed docs. getElementsByTagName matches the full qualified name.
+function tagText(parent, name){
+  const el = parent.getElementsByTagName(name)[0];
+  return el ? (el.textContent||'').trim() : '';
+}
+function tagAttr(parent, name, attr){
+  const el = parent.getElementsByTagName(name)[0];
+  return el ? el.getAttribute(attr) : null;
+}
+// Pick the best link: RSS <link>text</link>, or Atom <link rel="alternate" href>
+function pickLink(item){
+  const links = Array.from(item.getElementsByTagName('link'));
+  for(const l of links){
+    const txt = (l.textContent||'').trim();
+    if(txt && /^https?:/i.test(txt)) return txt;        // RSS 2.0
+  }
+  let alt = links.find(l=>l.getAttribute('rel')==='alternate');
+  let none = links.find(l=>!l.getAttribute('rel'));
+  const href = (alt||none||links[0])?.getAttribute('href');
+  if(href) return href;                                  // Atom
+  const guid = tagText(item,'guid');
+  return /^https?:/i.test(guid) ? guid : '#';
+}
+
+function parseRssXml(text, source){
+  try{
+    const xml = new DOMParser().parseFromString(text,'application/xml');
+    if(xml.querySelector('parsererror')) return [];
+    // Support RSS 2.0 <item> AND Atom <entry>
+    const nodes = [...xml.querySelectorAll('item'), ...xml.querySelectorAll('entry')];
+    if(!nodes.length) return [];
+    return nodes.slice(0,20).map(item=>{
+      const title = tagText(item,'title');
+      const link  = pickLink(item);
+      // pubDate (RSS) or published/updated (Atom)
+      const pubStr = tagText(item,'pubDate') || tagText(item,'published')
+                  || tagText(item,'dc:date') || tagText(item,'updated');
+      // thumbnail: media:thumbnail, media:content, enclosure, then img in body
+      let thumb = tagAttr(item,'media:thumbnail','url')
+               || tagAttr(item,'media:content','url');
+      if(!thumb){
+        const enc = item.getElementsByTagName('enclosure')[0];
+        if(enc && /image/i.test(enc.getAttribute('type')||'')) thumb = enc.getAttribute('url');
+      }
+      if(!thumb){
+        const body = tagText(item,'content:encoded') || tagText(item,'content')
+                  || tagText(item,'description') || tagText(item,'summary');
+        const m = body.match(/<img[^>]+src=["']([^"']+)/i)
+               || body.match(/src=["']([^"']+\.(jpg|jpeg|png|webp)[^"']*)/i);
+        if(m) thumb = m[1];
+      }
+      const d = pubStr ? new Date(pubStr) : null;
+      return{
+        source,
+        title,
+        link,
+        pubDate: (d && !isNaN(d)) ? d : null,
+        thumb: thumb && /^https?:/i.test(thumb) ? thumb : null,
+        categories:[],
+      };
+    }).filter(a=>a.title&&a.link&&a.link!=='#');
+  }catch{ return []; }
+}
+
+// ─── Fetch one feed ──────────────────────────────────────────────────────────
+// Races two CORS proxies in parallel — whichever returns valid data first wins.
+// Falls back to rss2json (cached ~1h) only if both proxies fail.
+const PROXIES = [
+  url => 'https://corsproxy.io/?url=' + encodeURIComponent(url),
+  url => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
+];
+
+function makeSignal(){
+  // AbortSignal.timeout not available on Safari < 15.4
+  if(AbortSignal.timeout) return AbortSignal.timeout(9000);
+  const c = new AbortController();
+  setTimeout(()=>c.abort(), 9000);
+  return c.signal;
+}
+
+async function fetchFeedDirect(source){
+  // Promise.any resolves with the first proxy that returns non-empty items
+  return await Promise.any(
+    PROXIES.map(async proxyFn => {
+      const res = await fetch(proxyFn(source.url), {cache:'no-store', signal:makeSignal()});
+      if(!res.ok) throw new Error(res.status);
+      const items = parseRssXml(await res.text(), source);
+      if(!items.length) throw new Error('empty');
+      return items;
+    })
+  );
+}
+
+async function fetchFeedFallback(source){
+  const res = await fetch(R2J+encodeURIComponent(source.url),
+    {cache:'no-store', signal:makeSignal()});
+  if(!res.ok) return {items:[], cached:true};
+  const data = await res.json();
+  if(data.status!=='ok'||!data.items) return {items:[], cached:true};
+  return {
+    cached: true,
+    items: data.items.slice(0,20).map(item=>({
+      source,
+      title: item.title||'',
+      link: item.link||item.guid||'#',
+      pubDate: parseRssDate(item.pubDate),
+      thumb: extractImg(item),
+      categories: item.categories||[],
+    })),
+  };
+}
+
+// Returns { items, cached } so loadAll can track live vs fallback counts
+async function fetchFeed(source){
+  try{
+    const items = await fetchFeedDirect(source);
+    if(items.length) return {items, cached:false};
+  }catch{}
+  try{ return await fetchFeedFallback(source); }catch{}
+  return {items:[], cached:true};
+}
+
+// ─── Load all ────────────────────────────────────────────────────────────────
+let loadingFeeds = false;
+async function loadAll(){
+  // Guard: visibility/online/auto-refresh/manual can all trigger this.
+  // Skip if a load is already in flight to avoid pile-ups & races.
+  if(loadingFeeds) return;
+  loadingFeeds = true;
+
+  // Clear interval BEFORE async work — prevents double-invocation
+  clearInterval(refreshInterval);
+  refreshInterval = null;
+
+  showSkeletons('live-feed',8);
+  const btn = document.getElementById('refresh-btn');
+  btn.classList.add('spinning');
+  setFetchStatus('loading');
+
+  try{
+    const results = await Promise.allSettled(SOURCES.map(fetchFeed));
+    let liveCount = 0, cachedCount = 0;
+    // Cap each source to an equal share so no outlet dominates the feed,
+    // then merge, sort by date, and keep the newest 100 overall.
+    const MAX_ARTICLES = 100;
+    const maxPerSource = Math.ceil(MAX_ARTICLES / SOURCES.length);
+    allArticles = results
+      .flatMap(r=>{
+        if(r.status!=='fulfilled') return [];
+        if(r.value.cached) cachedCount++; else liveCount++;
+        return r.value.items.slice(0, maxPerSource);
+      })
+      .sort((a,b)=>(b.pubDate||0)-(a.pubDate||0))
+      .slice(0, MAX_ARTICLES);
+
+    document.getElementById('live-count').textContent = allArticles.length;
+    document.getElementById('article-count').textContent = allArticles.length;
+    setFetchStatus('done', liveCount, cachedCount);
+    updateFilterCounts();
+
+    updateTicker();
+    updateTrending();
+    renderCurrentTab();
+  } finally {
+    // Restart auto-refresh countdown even if something above threw
+    nextRefreshAt = Date.now() + 5*60*1000;
+    clearInterval(refreshInterval);
+    refreshInterval = setInterval(()=>{
+      const left = Math.max(0, Math.ceil((nextRefreshAt-Date.now())/1000));
+      document.getElementById('refresh-timer').textContent =
+        `Auto-refresh in ${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}`;
+      if(left===0) loadAll();
+    }, 1000);
+    btn.classList.remove('spinning');
+    loadingFeeds = false;
+  }
+}
+
+function setFetchStatus(state, live=0, cached=0){
+  const el = document.getElementById('fetch-status');
+  if(!el) return;
+  if(state==='loading'){
+    el.textContent='⏳ Fetching live feeds…';
+    el.style.color='var(--dim)';
+    return;
+  }
+  const total = live+cached;
+  if(live===total && total>0){
+    el.innerHTML=`<span style="color:var(--green)">● Live</span> · ${total}/${SOURCES.length} sources`;
+  } else if(live>0){
+    el.innerHTML=`<span style="color:var(--yellow)">◐ Partial</span> · ${live} live, ${cached} cached`;
+  } else {
+    el.innerHTML=`<span style="color:var(--accent)">● Cached</span> · data may be up to 1h old`;
+  }
+  const t = new Date();
+  el.innerHTML += ` · ${t.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}`;
+}
+
+function renderCurrentTab(){
+  switch(currentTab){
+    case 'home': renderHome(); break;
+    case 'live': applyFilter(); break;
+    case 'analysis': renderAnalysis(); break;
+    case 'bookmarks': renderBookmarks(); break;
+  }
+  updateBMCount();
+}
+
+// Per-source article counts on the Live News filter pills
+function updateFilterCounts(){
+  document.querySelectorAll('.ftab').forEach(tab=>{
+    const src = tab.dataset.src;
+    const n = src==='all'
+      ? allArticles.length
+      : allArticles.filter(a=>a.source.id===src).length;
+    let c = tab.querySelector('.fcount');
+    if(!c){ c=document.createElement('span'); c.className='fcount'; tab.appendChild(c); }
+    c.textContent = n ? n : '';
+  });
+}
+
+// ─── Skeletons ───────────────────────────────────────────────────────────────
+function showSkeletons(id, n){
+  const el = document.getElementById(id);
+  if(el) el.innerHTML = Array(n).fill('<div class="skel"></div>').join('');
+}
+
+// ─── Render Home ─────────────────────────────────────────────────────────────
+function renderHome(){
+  const grid0 = document.getElementById('home-grid');
+  if(!allArticles.length){
+    document.getElementById('hero-source').textContent = '';
+    document.getElementById('hero-title').textContent = 'Unable to load stories';
+    document.getElementById('hero-meta').textContent = 'All feeds unreachable. Check your connection and tap Refresh.';
+    document.getElementById('hero-img').style.display='none';
+    if(grid0) grid0.innerHTML='<div class="status-msg"><span class="ico">📡</span>No stories loaded.<br>Tap Refresh to try again.</div>';
+    return;
+  }
+  const hero = allArticles[0];
+  const heroEl = document.getElementById('hero');
+  const img = document.getElementById('hero-img');
+  heroEl.href = hero.link;
+  if(hero.thumb){ img.src=hero.thumb; img.style.display='block'; } else img.style.display='none';
+  document.getElementById('hero-source').textContent = '▶ ' + hero.source.label.toUpperCase();
+  document.getElementById('hero-title').textContent = hero.title;
+  document.getElementById('hero-meta').textContent = timeAgo(hero.pubDate) + ' · ' + hero.source.label;
+
+  const grid = document.getElementById('home-grid');
+  const items = allArticles.slice(1, 9);
+  grid.innerHTML = items.map((a,i)=>artHTML(a,i+1)).join('');
+}
+
+// ─── Render Live Feed ─────────────────────────────────────────────────────────
+function applyFilter(){
+  const visible = activeFilter==='all' ? allArticles : allArticles.filter(a=>a.source.id===activeFilter);
+  const feed = document.getElementById('live-feed');
+  if(!visible.length){
+    feed.innerHTML='<div class="status-msg"><span class="ico">📭</span>No stories found. Try refreshing.</div>';
+    return;
+  }
+  feed.innerHTML = visible.map((a,i)=>{
+    const idx = allArticles.indexOf(a);
+    return artHTML(a, idx);
+  }).join('');
+}
+
+// ─── Render Analysis ─────────────────────────────────────────────────────────
+function renderAnalysis(){
+  const ANALYSIS_TERMS = ['analysis','opinion','editorial','commentary','perspective','explained','why','how','what','fact check','deep dive'];
+  const feed = document.getElementById('analysis-feed');
+  const pieces = allArticles.filter(a=>{
+    const t = (a.title||'').toLowerCase();
+    return ANALYSIS_TERMS.some(term=>t.includes(term));
+  }).slice(0,20);
+  if(!pieces.length){
+    feed.innerHTML='<div class="status-msg"><span class="ico">📰</span>No analysis pieces loaded yet. Check back after refresh.</div>';
+    return;
+  }
+  feed.innerHTML = pieces.map(a=>{ const idx=allArticles.indexOf(a); return artHTML(a,idx); }).join('');
+}
+
+// ─── Render Bookmarks ─────────────────────────────────────────────────────────
+function renderBookmarks(){
+  const feed = document.getElementById('bookmarks-feed');
+  if(!bookmarks.length){
+    feed.innerHTML='<div class="status-msg"><span class="ico">🔖</span>No saved articles yet.<br>Tap 🏷 on any story to save it.</div>';
+    return;
+  }
+  feed.innerHTML = bookmarks.map((b,i)=>{
+    const bObj = {...b, pubDate: b.pubDate?new Date(b.pubDate):null};
+    return `<div style="position:relative">
+      <a class="art" href="${escH(b.link)}" target="_blank" rel="noopener">
+        <div class="art-inner">
+          ${b.thumb?`<img class="art-thumb" src="${escH(b.thumb)}" alt="" loading="lazy" onerror="imgErr(this,'${escH(b.source.icon)}')">`:
+            `<div class="art-thumb-ph">${escH(b.source.icon)}</div>`}
+          <div class="art-body">
+            <div class="art-meta"><span class="src-badge ${b.source.cls}">${escH(b.source.label)}</span>
+              <span class="art-age">${timeAgo(bObj.pubDate)}</span></div>
+            <div class="art-title">${escH(b.title)}</div>
+          </div>
+        </div>
+      </a>
+      <button class="bm-btn saved" onclick="removeBMByLink('${escH(b.link)}')" title="Remove">🔖</button>
+    </div>`;
+  }).join('');
+}
+
+function removeBMByLink(link){
+  bookmarks = bookmarks.filter(b=>b.link!==link);
+  saveBMs();
+  updateBMCount();
+  renderBookmarks();
+}
+
+// ─── Ticker ──────────────────────────────────────────────────────────────────
+function updateTicker(){
+  const items = allArticles.slice(0,20);
+  if(!items.length) return;
+  const text = items.map(a=>escH(a.title)).join('</span><span>');
+  // duplicate for seamless loop
+  const inner = document.getElementById('ticker-inner');
+  inner.innerHTML = `<span>${text}</span><span>${text}</span>`;
+}
+
+// ─── Trending ─────────────────────────────────────────────────────────────────
+function updateTrending(){
+  const list = document.getElementById('trending-list');
+  const top = allArticles.slice(0,5);
+  const colors = ['#e63946','#f97316','#f59e0b','#10b981','#3b82f6'];
+  list.innerHTML = top.map((a,i)=>`
+    <a href="${escH(a.link)}" target="_blank" rel="noopener" style="text-decoration:none">
+      <div class="trend-item">
+        <span class="trend-num">${i+1}</span>
+        <span class="trend-dot" style="background:${colors[i]}"></span>
+        <span style="font-size:.7rem;color:var(--text2);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${escH(a.title)}</span>
+      </div>
+    </a>`).join('');
+}
+
+// ─── Clock ───────────────────────────────────────────────────────────────────
+function initClock(){
+  function tick(){
+    const d = new Date();
+    const et = new Date(d.toLocaleString('en-US',{timeZone:'America/New_York'}));
+    const h = et.getHours()%12||12;
+    const m = String(et.getMinutes()).padStart(2,'0');
+    const ampm = et.getHours()<12?'AM':'PM';
+    document.getElementById('clock-badge').textContent = `${h}:${m} ${ampm} ET`;
+
+    // Countdown
+    const target = new Date('2026-11-03T00:00:00-05:00');
+    const diff = target - d;
+    if(diff>0){
+      const days = Math.floor(diff/86400000);
+      const hrs  = Math.floor((diff%86400000)/3600000);
+      const mins = Math.floor((diff%3600000)/60000);
+      const secs = Math.floor((diff%60000)/1000);
+      document.getElementById('cd-d').textContent = days;
+      document.getElementById('cd-h').textContent = String(hrs).padStart(2,'0');
+      document.getElementById('cd-m').textContent = String(mins).padStart(2,'0');
+      document.getElementById('cd-s').textContent = String(secs).padStart(2,'0');
+    }
+
+    // Schedule "on now"
+    const etMins = et.getHours()*60 + et.getMinutes();
+    let foundShow = null;
+    document.querySelectorAll('.sched-card').forEach(card=>{
+      const s = parseInt(card.dataset.start);
+      const e = parseInt(card.dataset.end);
+      const onNow = etMins>=s && etMins<e;
+      card.classList.toggle('on-now', onNow);
+      if(onNow) foundShow = card.querySelector('.sched-show')?.textContent;
+    });
+    const onNowBar = document.getElementById('on-now-bar');
+    const onNowText = document.getElementById('on-now-text');
+    if(foundShow){
+      onNowBar.style.display='flex';
+      onNowText.textContent = 'On Now: '+foundShow;
+    } else {
+      onNowBar.style.display='none';
+    }
+  }
+  tick();
+  setInterval(tick, 1000);
+}
+
+// ─── Weather ──────────────────────────────────────────────────────────────────
+async function fetchWeather(){
+  const WX_ICONS = {
+    113:'☀️',116:'⛅',119:'🌥',122:'☁️',143:'🌫',176:'🌦',179:'🌨',182:'🌧',185:'🌧',
+    200:'⛈️',227:'🌨',230:'❄️',248:'🌫',260:'🌫',263:'🌦',266:'🌧',281:'🌧',284:'🌧',
+    293:'🌦',296:'🌧',299:'🌧',302:'🌧',305:'🌧',308:'🌧',311:'🌧',314:'🌧',317:'🌧',
+    320:'🌨',323:'🌨',326:'🌨',329:'❄️',332:'❄️',335:'❄️',338:'❄️',350:'🌧',353:'🌦',
+    356:'🌧',359:'🌧',362:'🌧',365:'🌧',368:'🌨',371:'❄️',374:'🌧',377:'🌧',386:'⛈️',
+    389:'⛈️',392:'⛈️',395:'❄️',
+  };
+  try{
+    const r = await fetch('https://wttr.in/Washington,DC?format=j1',{signal:makeSignal()});
+    if(!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    const c = d.current_condition[0];
+    const code = parseInt(c.weatherCode);
+    document.getElementById('wx-icon').textContent = WX_ICONS[code]||'🌡️';
+    document.getElementById('wx-temp').textContent = c.temp_F+'°F';
+    document.getElementById('wx-desc').textContent = c.weatherDesc[0].value;
+    document.getElementById('wx-hum').textContent = c.humidity+'% humidity';
+    document.getElementById('wx-wind').textContent = c.windspeedMiles+' mph';
+    document.getElementById('wx-vis').textContent = c.visibility+' mi visibility';
+  }catch{
+    document.getElementById('wx-desc').textContent = 'Weather unavailable';
+  }
+}
+
+// ─── Tab routing ──────────────────────────────────────────────────────────────
+function showTab(name){
+  currentTab = name;
+  try{ localStorage.setItem('pp_tab', name); }catch{}
+  // Clear any active search so navigation isn't masked by search results
+  const si = document.getElementById('search-input');
+  if(si && si.value){ si.value=''; }
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));
+  document.getElementById('search-panel').classList.remove('active');
+  document.getElementById('main-toolbar').style.display='flex';
+  const panel = document.getElementById('tab-'+name);
+  if(panel) panel.classList.add('active');
+  renderCurrentTab();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+document.querySelectorAll('.nav-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>showTab(btn.dataset.tab));
+});
+
+// ─── Source filter tabs ────────────────────────────────────────────────────────
+document.querySelectorAll('.ftab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    activeFilter = tab.dataset.src;
+    applyFilter();
+  });
+});
+
+// ─── Search ───────────────────────────────────────────────────────────────────
+let searchTimeout;
+document.getElementById('search-input').addEventListener('input', e=>{
+  clearTimeout(searchTimeout);
+  const q = e.target.value.trim().toLowerCase();
+  if(!q){
+    document.getElementById('search-panel').classList.remove('active');
+    document.getElementById('main-toolbar').style.display='flex';
+    const panel = document.getElementById('tab-'+currentTab);
+    if(panel) panel.classList.add('active');
+    renderCurrentTab();
+    return;
+  }
+  searchTimeout = setTimeout(()=>{
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    document.getElementById('main-toolbar').style.display='none';
+    const sp = document.getElementById('search-panel');
+    sp.classList.add('active');
+    const results = allArticles.filter(a=>a.title.toLowerCase().includes(q));
+    document.getElementById('search-result-count').textContent = `(${results.length} results for "${escH(q)}")`;
+    const feed = document.getElementById('search-results');
+    if(!results.length){
+      feed.innerHTML='<div class="status-msg"><span class="ico">🔍</span>No results found.</div>';
+      return;
+    }
+    feed.innerHTML = results.map((a,i)=>{ const idx=allArticles.indexOf(a); return artHTML(a,idx); }).join('');
+  },300);
+});
+
+// ─── Theme toggle ─────────────────────────────────────────────────────────────
+document.getElementById('theme-btn').addEventListener('click',()=>{
+  const dark = document.documentElement.dataset.theme==='dark';
+  document.documentElement.dataset.theme = dark?'light':'dark';
+  document.getElementById('theme-btn').textContent = dark?'🌙':'☀️';
+  document.getElementById('theme-meta').content = dark?'#f1f5f9':'#0f172a';
+  localStorage.setItem('pp_theme', dark?'light':'dark');
+});
+// Restore theme
+const savedTheme = localStorage.getItem('pp_theme');
+if(savedTheme){
+  document.documentElement.dataset.theme=savedTheme;
+  document.getElementById('theme-btn').textContent=savedTheme==='light'?'🌙':'☀️';
+}
+
+// ─── Offline / online ────────────────────────────────────────────────────────
+function syncOnline(){
+  document.body.classList.toggle('offline', !navigator.onLine);
+}
+window.addEventListener('online', ()=>{ syncOnline(); toast('✓ Back online — refreshing'); loadAll(); });
+window.addEventListener('offline', ()=>{ syncOnline(); toast('⚠ You are offline'); });
+syncOnline();
+
+// ─── Pause auto-refresh when tab hidden; refresh on return if stale ──────────
+document.addEventListener('visibilitychange', ()=>{
+  if(document.hidden){
+    clearInterval(refreshInterval);
+    refreshInterval = null;
+  } else {
+    if(navigator.onLine && (!nextRefreshAt || Date.now() >= nextRefreshAt)){
+      loadAll();
+    } else if(!refreshInterval){
+      refreshInterval = setInterval(()=>{
+        const left = Math.max(0, Math.ceil((nextRefreshAt-Date.now())/1000));
+        document.getElementById('refresh-timer').textContent =
+          `Auto-refresh in ${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}`;
+        if(left===0) loadAll();
+      }, 1000);
+    }
+  }
+});
+
+// ─── Back to top ─────────────────────────────────────────────────────────────
+const toTopBtn = document.getElementById('to-top');
+window.addEventListener('scroll', ()=>{
+  toTopBtn.classList.toggle('show', window.scrollY > 600);
+}, {passive:true});
+toTopBtn.addEventListener('click', ()=>window.scrollTo({top:0,behavior:'smooth'}));
+
+// ─── Keyboard shortcuts: "/" focus search, Esc clears ────────────────────────
+document.addEventListener('keydown', e=>{
+  const si = document.getElementById('search-input');
+  if(e.key==='/' && document.activeElement!==si){
+    e.preventDefault(); si.focus();
+  } else if(e.key==='Escape' && document.activeElement===si){
+    si.value=''; si.dispatchEvent(new Event('input')); si.blur();
+  }
+});
+
+// ─── Restore last tab ────────────────────────────────────────────────────────
+let bootTab = 'home';
+try{
+  const t = localStorage.getItem('pp_tab');
+  if(t && document.getElementById('tab-'+t)) bootTab = t;
+}catch{}
+
+// ─── Boot ─────────────────────────────────────────────────────────────────────
+initClock();
+fetchWeather();
+updateBMCount();
+if(bootTab!=='home') showTab(bootTab);
+loadAll();
+</script>
+</body>
+</html>
